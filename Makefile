@@ -6,7 +6,7 @@ COMPOSER_EXEC = composer
 .DEFAULT_GOAL = help
 NUMBER        =
 ARGS          =
-.PHONY        : help install update generate mark-paid lint lint-check
+.PHONY        : help install update fonts generate mark-paid lint lint-check
 
 ## —— 🧾 The Invoice PHP Maker Makefile 🧾 ——————————————————————
 help: ## Outputs this help screen
@@ -18,6 +18,9 @@ install: ## Install Composer dependencies
 
 update: ## Update Composer dependencies
 	@$(COMPOSER_EXEC) update
+
+fonts: ## Rebuild TCPDF standard fonts (runs automatically after install/update)
+	@$(PHP_EXEC) bin/build-fonts.php
 
 ## —— Invoice 🧾 ——————————————————————————————————————————————
 generate: ## Generate a new invoice (interactive)

@@ -6,8 +6,8 @@
     "require": {
         "php": "^8.5",
         "symfony/console": "^8.1",
-        "tecnickcom/tcpdf": "^7.0.9",
-        "sprain/swiss-qr-bill": "^5.3",
+        "tecnickcom/tc-lib-pdf": "^8.20",
+        "sprain/swiss-qr-bill": "dev-pr-299-tclibpdf@dev",
         "nesbot/carbon": "^3.14"
     },
     "require-dev": {
@@ -18,6 +18,39 @@
             "RSickenberg\\InvoicePhpMaker\\": "src/"
         }
     },
+    "scripts": {
+        "post-install-cmd": "@php bin/build-fonts.php",
+        "post-update-cmd": "@php bin/build-fonts.php"
+    },
+    "repositories": [
+        {
+            "type": "package",
+            "package": {
+                "name": "sprain/swiss-qr-bill",
+                "version": "dev-pr-299-tclibpdf",
+                "dist": {
+                    "type": "zip",
+                    "url": "https://github.com/sprain/php-swiss-qr-bill/archive/8e5df9287272feda2f9bc572a2fc16dd3b167796.zip"
+                },
+                "autoload": {
+                    "psr-4": {
+                        "Sprain\\SwissQrBill\\": "src"
+                    }
+                },
+                "require": {
+                    "php": "~8.1.0|~8.2.0|~8.3.0|~8.4.0|~8.5.0",
+                    "ext-dom": "*",
+                    "ext-bcmath": "*",
+                    "symfony/validator": "^6.3|^7.0|^8.0",
+                    "symfony/intl": "^6.3|^7.0|^8.0",
+                    "kmukku/php-iso11649": "^1.5",
+                    "endroid/qr-code": "^4.4.4|^5.0|^6.0",
+                    "symfony/polyfill-intl-icu": "^1.23",
+                    "symfony/polyfill-mbstring": "^1.30"
+                }
+            }
+        }
+    ],
     "config": {
         "sort-packages": true
     },

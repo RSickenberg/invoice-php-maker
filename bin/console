@@ -24,6 +24,11 @@ foreach ($autoloadFiles as $autoloadFile) {
 
 $projectDir = dirname(__DIR__);
 
+// tc-lib-pdf-font needs this constant defined before any font lookup runs
+// (previously handled implicitly by TCPDF v7's own facade bootstrap -- see
+// DECISIONS.md D-013).
+\define('K_PATH_FONTS', \realpath($projectDir . '/vendor/tecnickcom/tc-lib-pdf-font/target/fonts'));
+
 $configRepository = new AppConfigRepository($projectDir . '/config/config.json');
 $clientRepository = new ClientRepository($projectDir . '/config/clients.json');
 $ledger = new InvoiceLedger($projectDir . '/invoices.json');

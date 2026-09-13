@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "431397c5895358862dae6ba19a8fef16",
+    "content-hash": "523f4997a104736f2db5c2ccd262e910",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -514,17 +514,10 @@
         },
         {
             "name": "sprain/swiss-qr-bill",
-            "version": "v5.3",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/sprain/php-swiss-qr-bill.git",
-                "reference": "2e5e4f16ae1832d2594ab288e401ede6a76eff2a"
-            },
+            "version": "dev-pr-299-tclibpdf",
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sprain/php-swiss-qr-bill/zipball/2e5e4f16ae1832d2594ab288e401ede6a76eff2a",
-                "reference": "2e5e4f16ae1832d2594ab288e401ede6a76eff2a",
-                "shasum": ""
+                "url": "https://github.com/sprain/php-swiss-qr-bill/archive/8e5df9287272feda2f9bc572a2fc16dd3b167796.zip"
             },
             "require": {
                 "endroid/qr-code": "^4.4.4|^5.0|^6.0",
@@ -537,48 +530,12 @@
                 "symfony/polyfill-mbstring": "^1.30",
                 "symfony/validator": "^6.3|^7.0|^8.0"
             },
-            "require-dev": {
-                "dg/bypass-finals": "^1.8",
-                "dms/phpunit-arraysubset-asserts": "^0.5",
-                "fpdf/fpdf": "^1.85",
-                "friendsofphp/php-cs-fixer": "^3.15",
-                "khanamiryan/qrcode-detector-decoder": "^2.0.2",
-                "nunomaduro/mock-final-classes": "^1.2",
-                "phpstan/phpstan": "^1.11-dev",
-                "phpunit/phpunit": "^10.5",
-                "rector/rector": "^1.2",
-                "setasign/fpdf": "^1.8.2",
-                "setasign/fpdi": "^2.3.5",
-                "tecnickcom/tcpdf": "^6.3.2"
-            },
-            "suggest": {
-                "fpdf/fpdf": "Needed to create pdfs with FpdfOutput",
-                "setasign/fpdf": "Needed to create pdfs with Fpdi",
-                "setasign/fpdi": "Needed to create pdfs with Fpdi",
-                "tecnickcom/tcpdf": "Needed to create pdfs with TcPdfOutput"
-            },
             "type": "library",
             "autoload": {
                 "psr-4": {
                     "Sprain\\SwissQrBill\\": "src"
                 }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "description": "A PHP library to create Swiss QR bills",
-            "support": {
-                "issues": "https://github.com/sprain/php-swiss-qr-bill/issues",
-                "source": "https://github.com/sprain/php-swiss-qr-bill/tree/v5.3"
-            },
-            "funding": [
-                {
-                    "url": "https://github.com/sprain",
-                    "type": "github"
-                }
-            ],
-            "time": "2026-01-28T11:45:53+00:00"
+            }
         },
         {
             "name": "symfony/clock",
@@ -2879,77 +2836,6 @@
                 }
             ],
             "time": "2026-09-05T07:33:19+00:00"
-        },
-        {
-            "name": "tecnickcom/tcpdf",
-            "version": "7.0.9",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/tecnickcom/TCPDF.git",
-                "reference": "7bec5bd24154dd4331a22af7bed2b2890be74df4"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/tecnickcom/TCPDF/zipball/7bec5bd24154dd4331a22af7bed2b2890be74df4",
-                "reference": "7bec5bd24154dd4331a22af7bed2b2890be74df4",
-                "shasum": ""
-            },
-            "require": {
-                "ext-curl": "*",
-                "php": ">=8.2",
-                "tecnickcom/tc-lib-pdf": "^8.73.6"
-            },
-            "require-dev": {
-                "carthage-software/mago": "1.47.6",
-                "pdepend/pdepend": "^2.16",
-                "phpunit/phpunit": "^11.5 || ^12.5 || ^13.3"
-            },
-            "suggest": {
-                "ext-gd": "Enables additional image handling in some workflows.",
-                "ext-imagick": "Enables additional image format support when available.",
-                "ext-zlib": "Recommended for compressed streams and related features.",
-                "tecnickcom/tc-lib-pdf": "Modern replacement for TCPDF for new projects."
-            },
-            "type": "library",
-            "autoload": {
-                "classmap": [
-                    "config",
-                    "tcpdf.php"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "LGPL-3.0-or-later"
-            ],
-            "authors": [
-                {
-                    "name": "Nicola Asuni",
-                    "email": "info@tecnick.com",
-                    "role": "lead"
-                }
-            ],
-            "description": "Deprecated legacy PDF engine for PHP. Use instead tecnickcom/tc-lib-pdf.",
-            "homepage": "https://tcpdf.org",
-            "keywords": [
-                "PDFD32000-2008",
-                "TCPDF",
-                "barcodes",
-                "datamatrix",
-                "pdf",
-                "pdf417",
-                "qrcode"
-            ],
-            "support": {
-                "issues": "https://github.com/tecnickcom/TCPDF/issues",
-                "source": "https://github.com/tecnickcom/TCPDF"
-            },
-            "funding": [
-                {
-                    "url": "https://github.com/sponsors/tecnickcom",
-                    "type": "github"
-                }
-            ],
-            "time": "2026-09-07T09:57:02+00:00"
         }
     ],
     "packages-dev": [
@@ -4976,7 +4862,9 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {},
+    "stability-flags": {
+        "sprain/swiss-qr-bill": 20
+    },
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
