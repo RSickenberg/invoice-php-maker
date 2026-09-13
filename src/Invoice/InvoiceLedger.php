@@ -54,6 +54,51 @@ final class InvoiceLedger
     }
 
     /**
+     * @return bool Whether the year's sequence counter was rolled back.
+     * @throws \JsonException
+     */
+    public function removeEntry(string $number): bool
+    {
+        $this->load();
+
+        $index = array_find_key($this->entries, static fn($entry) => $entry->number === $number);
+        if ($index === null) {
+            throw new RuntimeException(\sprintf('No invoice "%s" found in the ledger.', $number));
+        }
+
+        unset($this->entries[$index]);
+        $this->entries = array_values($this->entries);
+        $rolledBack = $this->rollbackSequenceIfLast($number);
+        $this->persist();
+
+        return $rolledBack;
+    }
+
+    /**
+     * Decrements the year's sequence counter when the deleted invoice was the
+     * last one issued for that year, so the next invoice reuses its number.
+     * Left untouched otherwise, to avoid a freed number colliding with an
+     * invoice issued after it.
+     */
+    private function rollbackSequenceIfLast(string $number): bool
+    {
+        if (\preg_match('/^(\d{4})-(\d+)$/', $number, $matches) !== 1) {
+            return false;
+        }
+
+        [, $year, $sequence] = $matches;
+        $sequence = (int) $sequence;
+
+        if (($this->lastSequenceByYear[$year] ?? null) === $sequence) {
+            $this->lastSequenceByYear[$year] = $sequence - 1;
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * @throws \JsonException
      */
     public function markPaid(string $number, string $paidAt): void

@@ -6,7 +6,7 @@ COMPOSER_EXEC = composer
 .DEFAULT_GOAL = help
 NUMBER        =
 ARGS          =
-.PHONY        : help install update fonts generate mark-paid lint lint-check
+.PHONY        : help install update fonts generate mark-paid delete lint lint-check
 
 ## —— 🧾 The Invoice PHP Maker Makefile 🧾 ——————————————————————
 help: ## Outputs this help screen
@@ -28,6 +28,9 @@ generate: ## Generate a new invoice (interactive)
 
 mark-paid: ## Mark an invoice as paid, e.g. make mark-paid NUMBER=2026-001
 	@$(PHP_EXEC) bin/console invoice:mark-paid $(NUMBER)
+
+delete: ## Delete an invoice (ledger entry and PDF), e.g. make delete NUMBER=2026-001
+	@$(PHP_EXEC) bin/console invoice:delete $(NUMBER)
 
 ## —— Quality ✅ ——————————————————————————————————————————————
 lint: ## Fix code style with php-cs-fixer

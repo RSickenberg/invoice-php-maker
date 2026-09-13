@@ -20,6 +20,7 @@ PHP 8.5 + `symfony/console` (component only, not the full framework) + `tecnickc
 | Install dependencies | `make install` (or `composer install`) |
 | Generate an invoice | `make generate` (or `bin/console invoice:generate`) |
 | Mark an invoice as paid | `make mark-paid NUMBER=<number>` (or `bin/console invoice:mark-paid <number>`) |
+| Delete an invoice | `make delete NUMBER=<number>` (or `bin/console invoice:delete <number>`) |
 | Configure | copy `config/config.example.json` → `config/config.json` and `config/clients.example.json` → `config/clients.json`, then fill them in |
 | Fix code style | `make lint` (php-cs-fixer) |
 | Check code style (no changes) | `make lint-check` |
