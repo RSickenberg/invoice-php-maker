@@ -17,7 +17,7 @@ final class Translations
         'issueDate' => ['fr' => 'Date', 'en' => 'Date'],
         'dueDate' => ['fr' => 'Échéance', 'en' => 'Due date'],
         'billedTo' => ['fr' => 'Facturé à', 'en' => 'Billed to'],
-        'description' => ['fr' => 'Description', 'en' => 'Description'],
+        'task' => ['fr' => 'Tâche', 'en' => 'Task'],
         'category' => ['fr' => 'Catégorie', 'en' => 'Category'],
         'hours' => ['fr' => 'Heures', 'en' => 'Hours'],
         'hourlyRate' => ['fr' => 'Taux/h', 'en' => 'Rate/h'],

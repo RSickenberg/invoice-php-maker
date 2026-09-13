@@ -7,7 +7,7 @@
         "php": "^8.5",
         "symfony/console": "^8.1",
         "tecnickcom/tc-lib-pdf": "^8.20",
-        "sprain/swiss-qr-bill": "dev-master",
+        "sprain/swiss-qr-bill": "dev-master#8e5df9287272feda2f9bc572a2fc16dd3b167796",
         "nesbot/carbon": "^3.14"
     },
     "require-dev": {

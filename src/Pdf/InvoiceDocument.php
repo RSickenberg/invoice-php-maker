@@ -196,6 +196,10 @@ final class InvoiceDocument
      * padding otherwise leaves slightly less room than measured here, which
      * previously left the last word or two of a line clipped with "...".
      *
+     * A single word wider than $width on its own (a long URL or token, with
+     * no spaces to break on) is hard-split at the character level instead of
+     * being left to overflow the cell and get truncated by cell()'s fit='T'.
+     *
      * @return list<string>
      * @throws \Com\Tecnick\Pdf\Font\Exception
      */
@@ -207,6 +211,17 @@ final class InvoiceDocument
         foreach (explode("\n", $text) as $paragraph) {
             $current = '';
             foreach (explode(' ', $paragraph) as $word) {
+                if ($this->textWidth($word) > $safeWidth) {
+                    if ($current !== '') {
+                        $lines[] = $current;
+                    }
+                    $pieces = $this->splitOverlongWord($word, $safeWidth);
+                    $current = array_pop($pieces);
+                    array_push($lines, ...$pieces);
+
+                    continue;
+                }
+
                 $candidate = $current === '' ? $word : $current . ' ' . $word;
                 if ($current !== '' && $this->textWidth($candidate) > $safeWidth) {
                     $lines[] = $current;
@@ -226,13 +241,17 @@ final class InvoiceDocument
      * at the current Y. Does not advance the cursor; call advanceY() with
      * the returned height explicitly.
      *
+     * Pass $lines to reuse a wrapLines() result already computed by the
+     * caller (e.g. to size a row before drawing it) instead of re-wrapping.
+     *
+     * @param ?list<string> $lines
      * @throws \Com\Tecnick\Pdf\Page\Exception
      * @throws \Com\Tecnick\Pdf\Font\Exception
      * @throws \Com\Tecnick\Unicode\Exception
      */
-    public function multiCell(float $x, float $width, float $lineHeight, string $text, string $align = 'L'): float
+    public function multiCell(float $x, float $width, float $lineHeight, string $text, string $align = 'L', ?array $lines = null): float
     {
-        $lines = $this->wrapLines($text, $width);
+        $lines ??= $this->wrapLines($text, $width);
         $startY = $this->y;
 
         foreach ($lines as $line) {
@@ -244,6 +263,36 @@ final class InvoiceDocument
         $this->y = $startY;
 
         return $height;
+    }
+
+    /**
+     * Splits a single word wider than $safeWidth into character-level chunks
+     * that each fit, so it can be drawn across multiple lines instead of
+     * overflowing one.
+     *
+     * @return list<string>
+     * @throws \Com\Tecnick\Pdf\Font\Exception
+     */
+    private function splitOverlongWord(string $word, float $safeWidth): array
+    {
+        $pieces = [];
+        $current = '';
+
+        foreach (mb_str_split($word) as $char) {
+            $candidate = $current . $char;
+            if ($current !== '' && $this->textWidth($candidate) > $safeWidth) {
+                $pieces[] = $current;
+                $current = $char;
+            } else {
+                $current = $candidate;
+            }
+        }
+
+        if ($current !== '') {
+            $pieces[] = $current;
+        }
+
+        return $pieces;
     }
 
     /**

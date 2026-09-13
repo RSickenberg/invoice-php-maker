@@ -155,7 +155,7 @@ final class InvoicePdfGenerator
 
         $doc->ensureRoom(7);
         $doc->setFont('B', 9);
-        $doc->cell($x['description'], $widths['description'], 7, Translations::get('description', $lang), 'L', [235, 235, 235]);
+        $doc->cell($x['description'], $widths['description'], 7, Translations::get('task', $lang), 'L', [235, 235, 235]);
         $doc->cell($x['category'], $widths['category'], 7, Translations::get('category', $lang), 'L', [235, 235, 235]);
         $doc->cell($x['hours'], $widths['hours'], 7, Translations::get('hours', $lang), 'R', [235, 235, 235]);
         $doc->cell($x['rate'], $widths['rate'], 7, Translations::get('hourlyRate', $lang), 'R', [235, 235, 235]);
@@ -171,10 +171,12 @@ final class InvoicePdfGenerator
         foreach ($tasksByCategory as $category => $tasks) {
             /** @var list<Task> $tasks */
             foreach ($tasks as $task) {
+                $descriptionLines = null;
                 $descriptionHeight = 0.0;
                 if ($task->description !== null) {
                     $doc->setFont('I', 8);
-                    $descriptionHeight = \count($doc->wrapLines($task->description, $widths['description'])) * 4;
+                    $descriptionLines = $doc->wrapLines($task->description, $widths['description']);
+                    $descriptionHeight = \count($descriptionLines) * 4;
                 }
 
                 $doc->ensureRoom(6 + $descriptionHeight);
@@ -190,7 +192,7 @@ final class InvoicePdfGenerator
                 if ($task->description !== null) {
                     $doc->setFont('I', 8);
                     $doc->setTextColor(120, 120, 120);
-                    $doc->advanceY($doc->multiCell($x['description'], $widths['description'], 4, $task->description, 'L'));
+                    $doc->advanceY($doc->multiCell($x['description'], $widths['description'], 4, $task->description, 'L', $descriptionLines));
                     $doc->setTextColor(0, 0, 0);
                 }
             }

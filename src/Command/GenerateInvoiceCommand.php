@@ -202,7 +202,7 @@ final class GenerateInvoiceCommand extends Command
 
         do {
             $title = $io->ask('Task title', validator: $this->requiredValidator());
-            $description = $io->ask('Task description (optional)', '');
+            $description = trim((string) $io->ask('Task description (optional)', ''));
             $category = $io->choice('Category', $categories);
 
             if ($category === self::OTHER_CATEGORY_LABEL) {
