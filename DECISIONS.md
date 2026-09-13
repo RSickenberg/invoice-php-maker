@@ -34,7 +34,7 @@ to be tracked. Never delete an entry; supersede or reopen it instead.
 
 ## D-002 (2026-09-13) -- TCPDF + sprain/swiss-qr-bill for the PDF and the QR-bill
 
-- **Status:** decided
+- **Status:** superseded by D-009 (TCPDF version pin only; sprain/swiss-qr-bill ^5.3 still stands)
 - **Foundational:** yes
 - **Decision:** `tecnickcom/tcpdf` (^6.11, the classic API -- not v7, which depends on `tc-lib-pdf`) + `sprain/swiss-qr-bill` (^5.3) via `Sprain\SwissQrBill\PaymentPart\Output\TcPdfOutput\TcPdfOutput`, which draws the payment slip directly onto the invoice's own TCPDF instance
 - **Why:** `sprain/swiss-qr-bill` is the best-maintained active library for the Swiss QR-bill and documents direct integration with TCPDF/FPDI (unlike dompdf, which "needs adjustments" per its own docs). Pinning TCPDF to ^6.11 rather than v7: v7 is a deprecated compatibility wrapper around `tc-lib-pdf` and no longer necessarily exposes the same classic API (Cell/MultiCell/SetFont) that `TcPdfOutput` expects; `sprain` itself tests against `tecnickcom/tcpdf ^6.3.2` in its require-dev.
@@ -87,3 +87,27 @@ to be tracked. Never delete an entry; supersede or reopen it instead.
 - **Decision:** `Makefile` and `.php-cs-fixer.dist.php` are copied from `programmatic-resume` (help banner/target style, `friendsofphp/php-cs-fixer ^3.95` with the `@auto`/`@auto:risky`/`@PhpCsFixer:risky` ruleset), not from the `php-frankenphp-symfony`/`php-frankenphp-laravel` template overlays (Docker-oriented, older `@PSR12`+`@Symfony` manual ruleset). Targets: `help`, `install`, `update`, `generate`, `mark-paid`, `lint`, `lint-check`.
 - **Why:** `programmatic-resume` is the closer match in shape (plain Composer PHP CLI tool, no Docker, no web server, PHP 8.5), and its php-cs-fixer setup is already proven working on a real project.
 - **Premises:** this sandbox has no Packagist access to verify the `friendsofphp/php-cs-fixer` install itself; run `composer update` once on a machine with network access to pull it in (the constraint is copied verbatim from `programmatic-resume`, already known-good there).
+
+## D-009 (2026-09-13) -- TCPDF v7 adopted (revises D-002)
+
+- **Status:** decided
+- **Foundational:** yes
+- **Decision:** move from `tecnickcom/tcpdf` ^6.11 to ^7.0.9, at the user's explicit, voluntary request.
+- **Why:** the user chose this directly. Re-checked the risk D-002 was pinning against: TCPDF v7.0.9's own docblock describes itself as "a compatibility facade: it implements the legacy TCPDF public API as thin wrappers that delegate ... to the modern tc-lib-pdf engine", and its `MAPPING.md` lists every method our code and `sprain/swiss-qr-bill`'s `TcPdfOutput` call (`Cell`, `MultiCell`, `SetFont`, `SetTextColor`, `ImageSVG` including the `@`-prefixed inline-SVG form, `StartTransform`/`Rotate`/`StopTransform`, `Header`/`Footer` page hooks, etc.) as implemented ("adapter"/"shim"/"delegated"), not "blocked". PHP resolves method calls case-insensitively, so the v7 facade's lowerCamelCase methods (`setY`, `setFont`, ...) still satisfy the classic UpperCamelCase call sites unchanged. No source changes were needed in `InvoiceDocument`, `InvoicePdfGenerator` or `QrBillFactory`.
+- **Premises:** verified by static API inspection (MAPPING.md + direct signature reading of TCPDF v7.0.9's `tcpdf.php`), not a full runtime install: `tecnickcom/tc-lib-pdf`'s own dependency tree (~15 further `tecnickcom/tc-lib-*` packages) was judged too large to clone package-by-package for this sandbox's blocked-Packagist workaround, proportionate to a version bump the user already owns. Run `bin/console invoice:generate` for real once on a machine with Packagist access (`make install` / `composer update`) to confirm end-to-end; if anything surfaces, the fix is almost certainly a v7-only method name from `MAPPING.md`'s "blocked" list (only `ImageEps` and `addPageRegion`, neither used here).
+
+## D-010 (2026-09-13) -- Config DTOs (Creditor, Defaults) instead of raw array access
+
+- **Status:** decided
+- **Foundational:** no
+- **Decision:** `AppConfig` now holds `Creditor $creditor` and `Defaults $defaults` (new `src/Config/Creditor.php` / `Defaults.php`, each with a `fromArray()` factory) instead of 10 flat `creditor*`/`default*` scalar properties. `AppConfigRepository::load()` builds these two DTOs first, then `AppConfig`. All call sites (`QrBillFactory`, `InvoicePdfGenerator`, `GenerateInvoiceCommand`) updated to `$config->creditor->name`, `$config->defaults->hourlyRate`, etc.
+- **Why:** matches the pattern already used for `Client` and `InvoiceLedgerEntry` (`fromArray`/`toArray` DTOs) instead of raw `$creditor['name']`/`$defaults['hourlyRate']` array-key access, which was the one inconsistent spot left. `email`/`phone`/`website`/`iban`/`vatEnabled`/`categories` stay flat on `AppConfig`, matching how they sit in the JSON (siblings of `creditor`/`defaults`, not nested under either).
+- **Premises:** none; this is a shape-only refactor, config.json's format is unchanged.
+
+## D-011 (2026-09-13) -- Carbon for date handling
+
+- **Status:** decided
+- **Foundational:** no
+- **Decision:** `nesbot/carbon` (^3.14) replaces native `DateTimeImmutable` everywhere a date is created or computed: `Invoice::$issueDate` is now `CarbonImmutable`, `Invoice::dueDate()` uses `->addDays()` instead of `->modify('+N days')`, `GenerateInvoiceCommand` uses `CarbonImmutable::today()`, `MarkPaidCommand` uses `CarbonImmutable::today()->toDateString()`. `InvoiceLedgerEntry` keeps plain `Y-m-d` strings for JSON storage, unchanged.
+- **Why:** the user prefers Carbon's API for date arithmetic over raw `DateTimeImmutable::modify()` string manipulation.
+- **Premises:** verified end-to-end (issue date, `+10 days` due date, ledger persistence, mark-paid) via a git-clone path-repo test build in this sandbox (Carbon's own dependency tree is small: `carbonphp/carbon-doctrine-types`, `psr/clock`, `symfony/clock`, `symfony/translation`) -- real PDF generated and visually checked, unchanged from before.

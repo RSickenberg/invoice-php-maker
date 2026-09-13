@@ -30,7 +30,6 @@ final class InvoicePdfGenerator
     public function __construct(private readonly QrBillFactory $qrBillFactory = new QrBillFactory()) {}
 
     /**
-     * @throws \DateMalformedStringException
      * @throws \RuntimeException
      */
     public function generate(Invoice $invoice, AppConfig $config, string $outputPath): void
@@ -41,10 +40,10 @@ final class InvoicePdfGenerator
         $pdf->invoiceNumber = $invoice->number;
         $pdf->clientName = $invoice->client->name;
         $pdf->language = $lang;
-        $pdf->setPrintHeader(true);
-        $pdf->setPrintFooter(true);
+        $pdf->setPrintHeader();
+        $pdf->setPrintFooter();
         $pdf->SetCreator('invoice-php-maker');
-        $pdf->SetAuthor($config->creditorName);
+        $pdf->SetAuthor($config->creditor->name);
         $pdf->SetTitle(\sprintf('%s %s', Translations::get('invoice', $lang), $invoice->number));
         $pdf->SetMargins(self::MARGIN, self::MARGIN, self::MARGIN);
         $pdf->SetAutoPageBreak(true, 20);
@@ -74,13 +73,13 @@ final class InvoicePdfGenerator
         $halfWidth = self::CONTENT_WIDTH / 2;
 
         $pdf->SetFont('helvetica', 'B', 14);
-        $pdf->Cell($halfWidth, 8, $config->creditorName, 0, 0, 'L');
+        $pdf->Cell($halfWidth, 8, $config->creditor->name, 0, 0, 'L');
         $pdf->SetFont('helvetica', 'B', 18);
         $pdf->Cell($halfWidth, 8, mb_strtoupper(Translations::get('invoice', $lang)), 0, 1, 'R');
 
         $leftLines = array_filter([
-            \sprintf('%s %s', $config->creditorStreet, $config->creditorHouseNumber),
-            \sprintf('%s %s', $config->creditorPostalCode, $config->creditorCity),
+            \sprintf('%s %s', $config->creditor->street, $config->creditor->houseNumber),
+            \sprintf('%s %s', $config->creditor->postalCode, $config->creditor->city),
             $config->email,
             $config->phone,
             $config->website,
@@ -170,9 +169,6 @@ final class InvoicePdfGenerator
         $pdf->Ln(4);
     }
 
-    /**
-     * @throws \DateMalformedStringException
-     */
     private function drawPaymentTermNote(InvoiceDocument $pdf, Invoice $invoice, string $lang): void
     {
         $pdf->SetFont('helvetica', '', 9);

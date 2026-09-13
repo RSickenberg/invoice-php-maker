@@ -114,7 +114,7 @@ final class InvoiceLedger
     {
         $dir = \dirname($this->path);
         if (!is_dir($dir) && !mkdir($dir, recursive: true) && !is_dir($dir)) {
-            throw new \RuntimeException(sprintf('Directory "%s" was not created', $dir));
+            throw new \RuntimeException(\sprintf('Directory "%s" was not created', $dir));
         }
 
         $payload = [
@@ -124,8 +124,10 @@ final class InvoiceLedger
 
         file_put_contents(
             $this->path,
-            json_encode($payload,
-                JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE). "\n"
+            json_encode(
+                $payload,
+                JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+            ) . "\n"
         );
     }
 }

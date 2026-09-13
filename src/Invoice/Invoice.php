@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace RSickenberg\InvoicePhpMaker\Invoice;
 
-use DateTimeImmutable;
+use Carbon\CarbonImmutable;
 use RSickenberg\InvoicePhpMaker\Config\Client;
 
 final readonly class Invoice
@@ -14,7 +14,7 @@ final readonly class Invoice
      */
     public function __construct(
         public string $number,
-        public DateTimeImmutable $issueDate,
+        public CarbonImmutable $issueDate,
         public Client $client,
         public string $language,
         public string $currency,
@@ -22,12 +22,9 @@ final readonly class Invoice
         public array $tasks,
     ) {}
 
-    /**
-     * @throws \DateMalformedStringException
-     */
-    public function dueDate(): DateTimeImmutable
+    public function dueDate(): CarbonImmutable
     {
-        return $this->issueDate->modify(\sprintf('+%d days', $this->paymentTerm->value));
+        return $this->issueDate->addDays($this->paymentTerm->value);
     }
 
     public function totalAmount(): float

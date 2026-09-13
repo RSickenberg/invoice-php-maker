@@ -13,20 +13,12 @@ final readonly class AppConfig
      * @param list<string> $categories
      */
     public function __construct(
-        public string $creditorName,
-        public string $creditorStreet,
-        public string $creditorHouseNumber,
-        public string $creditorPostalCode,
-        public string $creditorCity,
-        public string $creditorCountry,
+        public Creditor $creditor,
         public string $iban,
         public ?string $email,
         public ?string $phone,
         public ?string $website,
-        public float $defaultHourlyRate,
-        public string $defaultCurrency,
-        public int $defaultPaymentTermDays,
-        public string $defaultLanguage,
+        public Defaults $defaults,
         public bool $vatEnabled,
         public array $categories,
     ) {}

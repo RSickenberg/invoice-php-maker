@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace RSickenberg\InvoicePhpMaker\Command;
 
-use DateTimeImmutable;
+use Carbon\CarbonImmutable;
 use RSickenberg\InvoicePhpMaker\Invoice\InvoiceLedger;
 use RuntimeException;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -27,6 +27,9 @@ final class MarkPaidCommand extends Command
         $this->addArgument('number', InputArgument::REQUIRED, 'Invoice number, e.g. 2026-001');
     }
 
+    /**
+     * @throws \JsonException
+     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
@@ -46,8 +49,8 @@ final class MarkPaidCommand extends Command
         }
 
         try {
-            $this->ledger->markPaid($number, new DateTimeImmutable('today')->format('Y-m-d'));
-        } catch (RuntimeException $e) {
+            $this->ledger->markPaid($number, CarbonImmutable::today()->toDateString());
+        } catch (RuntimeException|\JsonException $e) {
             $io->outlineError($e->getMessage());
 
             return Command::FAILURE;

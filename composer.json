@@ -7,7 +7,8 @@
         "php": "^8.5",
         "symfony/console": "^8.1",
         "tecnickcom/tcpdf": "^7.0.9",
-        "sprain/swiss-qr-bill": "^5.3"
+        "sprain/swiss-qr-bill": "^5.3",
+        "nesbot/carbon": "^3.14"
     },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^3.95"

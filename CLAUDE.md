@@ -9,7 +9,7 @@ Personal CLI tool: generates a PDF invoice (with a Swiss QR-bill) by answering i
 
 ## Stack
 
-PHP 8.5 + `symfony/console` (component only, not the full framework) + `tecnickcom/tcpdf` + `sprain/swiss-qr-bill`. No Docker/FrankenPHP: neither of the template's overlays fits a local CLI tool (see D-001).
+PHP 8.5 + `symfony/console` (component only, not the full framework) + `tecnickcom/tcpdf` (^7.0, see D-009) + `sprain/swiss-qr-bill` + `nesbot/carbon` for dates (see D-011). No Docker/FrankenPHP: neither of the template's overlays fits a local CLI tool (see D-001).
 
 ## Common commands
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace RSickenberg\InvoicePhpMaker\Command;
 
-use DateTimeImmutable;
+use Carbon\CarbonImmutable;
 use InvalidArgumentException;
 use RSickenberg\InvoicePhpMaker\Config\AppConfig;
 use RSickenberg\InvoicePhpMaker\Config\AppConfigRepository;
@@ -60,7 +60,7 @@ final class GenerateInvoiceCommand extends Command
 
         $paymentTerm = $this->askPaymentTerm($io, $client, $config, $language);
 
-        $issueDate = new DateTimeImmutable('today');
+        $issueDate = CarbonImmutable::today();
         $number = $this->ledger->nextInvoiceNumber((int) $issueDate->format('Y'));
 
         $invoice = new Invoice(
@@ -68,7 +68,7 @@ final class GenerateInvoiceCommand extends Command
             issueDate: $issueDate,
             client: $client,
             language: $language,
-            currency: $config->defaultCurrency,
+            currency: $config->defaults->currency,
             paymentTerm: $paymentTerm,
             tasks: $tasks,
         );
@@ -105,6 +105,9 @@ final class GenerateInvoiceCommand extends Command
         return Command::SUCCESS;
     }
 
+    /**
+     * @throws \JsonException
+     */
     private function resolveClient(SymfonyStyle $io): Client
     {
         $clients = $this->clientRepository->all();
@@ -128,6 +131,9 @@ final class GenerateInvoiceCommand extends Command
         return $this->createClient($io);
     }
 
+    /**
+     * @throws \JsonException
+     */
     private function createClient(SymfonyStyle $io): Client
     {
         $io->section('New client');
@@ -177,7 +183,7 @@ final class GenerateInvoiceCommand extends Command
 
     private function askLanguage(SymfonyStyle $io, Client $client, AppConfig $config): string
     {
-        $default = $client->language ?? $config->defaultLanguage;
+        $default = $client->language ?? $config->defaults->language;
 
         return $io->choice('Invoice language', ['fr', 'en'], $default);
     }
@@ -189,7 +195,7 @@ final class GenerateInvoiceCommand extends Command
     {
         $categories = $config->categories;
         $categories[] = self::OTHER_CATEGORY_LABEL;
-        $defaultRate = $client->hourlyRate ?? $config->defaultHourlyRate;
+        $defaultRate = $client->hourlyRate ?? $config->defaults->hourlyRate;
 
         $tasks = [];
         $io->section('Billed tasks');
@@ -208,7 +214,7 @@ final class GenerateInvoiceCommand extends Command
             $tasks[] = new Task($description, $category, $hours, $rate);
 
             number_format($hours * $rate, 2, ',', '')
-                |> (static fn($x) => \sprintf('  → %s: %s %s', $description, $x, $config->defaultCurrency))
+                |> (static fn($x) => \sprintf('  → %s: %s %s', $description, $x, $config->defaults->currency))
                 |> $io->text(...);
         } while ($this->confirmYesNo($io, 'Add another task?', true));
 
@@ -217,7 +223,7 @@ final class GenerateInvoiceCommand extends Command
 
     private function askPaymentTerm(SymfonyStyle $io, Client $client, AppConfig $config, string $language): PaymentTerm
     {
-        $default = $client->paymentTermDays ?? $config->defaultPaymentTermDays;
+        $default = $client->paymentTermDays ?? $config->defaults->paymentTermDays;
         $choices = array_map(static fn(PaymentTerm $t) => $t->label($language), PaymentTerm::all());
         $defaultLabel = PaymentTerm::fromDays($default)->label($language);
 

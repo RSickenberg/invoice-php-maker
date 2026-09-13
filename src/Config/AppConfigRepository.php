@@ -24,24 +24,16 @@ final readonly class AppConfigRepository
 
         $data = json_decode((string) file_get_contents($this->path), true, flags: JSON_THROW_ON_ERROR);
 
-        $creditor = $data['creditor'] ?? throw new RuntimeException('config.json: missing "creditor" block.');
-        $defaults = $data['defaults'] ?? throw new RuntimeException('config.json: missing "defaults" block.');
+        $creditor = Creditor::fromArray($data['creditor'] ?? throw new RuntimeException('config.json: missing "creditor" block.'));
+        $defaults = Defaults::fromArray($data['defaults'] ?? throw new RuntimeException('config.json: missing "defaults" block.'));
 
         return new AppConfig(
-            creditorName: $creditor['name'],
-            creditorStreet: $creditor['street'],
-            creditorHouseNumber: (string) $creditor['houseNumber'],
-            creditorPostalCode: (string) $creditor['postalCode'],
-            creditorCity: $creditor['city'],
-            creditorCountry: $creditor['country'] ?? 'CH',
+            creditor: $creditor,
             iban: str_replace(' ', '', $data['iban']),
             email: $data['email'] ?? null,
             phone: $data['phone'] ?? null,
             website: $data['website'] ?? null,
-            defaultHourlyRate: (float) $defaults['hourlyRate'],
-            defaultCurrency: $defaults['currency'] ?? 'CHF',
-            defaultPaymentTermDays: (int) $defaults['paymentTermDays'],
-            defaultLanguage: $defaults['language'] ?? 'fr',
+            defaults: $defaults,
             vatEnabled: (bool) ($data['vatEnabled'] ?? false),
             categories: $data['categories'] ?? [],
         );

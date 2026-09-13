@@ -22,12 +22,12 @@ final class QrBillFactory
 
         $qrBill->setCreditor(
             QrBillLib\DataGroup\Element\StructuredAddress::createWithStreet(
-                $config->creditorName,
-                $config->creditorStreet,
-                $config->creditorHouseNumber,
-                $config->creditorPostalCode,
-                $config->creditorCity,
-                $config->creditorCountry,
+                $config->creditor->name,
+                $config->creditor->street,
+                $config->creditor->houseNumber,
+                $config->creditor->postalCode,
+                $config->creditor->city,
+                $config->creditor->country,
             )
         );
 
