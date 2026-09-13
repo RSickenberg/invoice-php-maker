@@ -4,8 +4,14 @@ declare(strict_types=1);
 
 namespace RSickenberg\InvoicePhpMaker\Pdf;
 
+use Com\Tecnick\File\Exception as FileException;
+use Com\Tecnick\Pdf\Encrypt\Exception as EncryptException;
+use Com\Tecnick\Pdf\Exception as PdfException;
+use Com\Tecnick\Pdf\Font\Exception as FontException;
+use Com\Tecnick\Pdf\Page\Exception as PageException;
 use Com\Tecnick\Pdf\Page\Unit;
 use Com\Tecnick\Pdf\Tcpdf;
+use Com\Tecnick\Unicode\Exception as UnicodeException;
 
 /**
  * Thin canvas around the raw tc-lib-pdf engine (Com\Tecnick\Pdf\Tcpdf).
@@ -26,17 +32,20 @@ use Com\Tecnick\Pdf\Tcpdf;
  */
 final class InvoiceDocument
 {
-    private const PAGE_WIDTH = 210;
-    private const PAGE_HEIGHT = 297;
-    public const MARGIN = 15;
-    public const CONTENT_WIDTH = self::PAGE_WIDTH - 2 * self::MARGIN;
+    private const int PAGE_WIDTH = 210;
+    private const int PAGE_HEIGHT = 297;
+    public const int MARGIN = 15;
+    public const int|float CONTENT_WIDTH = self::PAGE_WIDTH - 2 * self::MARGIN;
 
     /** Bottom margin reserved during normal body flow (matches the former SetAutoPageBreak(true, 20)). */
-    private const BODY_BOTTOM_MARGIN = 277;
+    private const int BODY_BOTTOM_MARGIN = 277;
 
-    private const CONTINUATION_HEADER_Y = 10;
-    private const BODY_START_AFTER_CONTINUATION_HEADER = 18;
-    private const FOOTER_Y = 282;
+    private const int CONTINUATION_HEADER_Y = 10;
+    private const int BODY_START_AFTER_CONTINUATION_HEADER = 18;
+    private const int FOOTER_Y = 282;
+
+    /** mm subtracted from a wrapLines() width to leave room for tc-lib-pdf's own cell padding. */
+    private const float WRAP_SAFETY_MARGIN = 2.0;
 
     public readonly Tcpdf $engine;
 
@@ -47,6 +56,11 @@ final class InvoiceDocument
     /** @var list<int> Every page id created for this document, in order. */
     private array $pageIds = [];
 
+    /**
+     * @throws \Com\Tecnick\Pdf\Font\Exception
+     * @throws \Com\Tecnick\Pdf\Page\Exception
+     * @throws \Com\Tecnick\Unicode\Exception
+     */
     public function __construct(
         private readonly string $invoiceNumber,
         private readonly string $clientName,
@@ -91,12 +105,19 @@ final class InvoiceDocument
         return $this->pid;
     }
 
+    /**
+     * @throws \Com\Tecnick\Pdf\Font\Exception
+     * @throws \Com\Tecnick\Pdf\Page\Exception
+     */
     public function setFont(string $style, float $sizePt): void
     {
         $font = $this->engine->font->insert($this->engine->pon, 'helvetica', $style, $sizePt);
         $this->engine->page->addContent($font['out'], $this->pid);
     }
 
+    /**
+     * @throws \Com\Tecnick\Pdf\Page\Exception
+     */
     public function setTextColor(int $r, int $g, int $b): void
     {
         $this->engine->page->addContent(
@@ -131,6 +152,11 @@ final class InvoiceDocument
         $this->addContinuationPage();
     }
 
+    /**
+     * @throws \Com\Tecnick\Pdf\Font\Exception
+     * @throws \Com\Tecnick\Unicode\Exception
+     * @throws \Com\Tecnick\Pdf\Page\Exception
+     */
     private function addContinuationPage(): void
     {
         // No data => tc-lib-pdf clones the previous page's format/margins (CB = 0 included).
@@ -163,6 +189,74 @@ final class InvoiceDocument
     }
 
     /**
+     * Splits $text into as many lines as needed to fit $width (in mm) at the
+     * currently selected font, breaking on word boundaries.
+     *
+     * A small safety margin is subtracted from $width: tc-lib-pdf's own cell
+     * padding otherwise leaves slightly less room than measured here, which
+     * previously left the last word or two of a line clipped with "...".
+     *
+     * @return list<string>
+     * @throws \Com\Tecnick\Pdf\Font\Exception
+     */
+    public function wrapLines(string $text, float $width): array
+    {
+        $safeWidth = $width - self::WRAP_SAFETY_MARGIN;
+        $lines = [];
+
+        foreach (explode("\n", $text) as $paragraph) {
+            $current = '';
+            foreach (explode(' ', $paragraph) as $word) {
+                $candidate = $current === '' ? $word : $current . ' ' . $word;
+                if ($current !== '' && $this->textWidth($candidate) > $safeWidth) {
+                    $lines[] = $current;
+                    $current = $word;
+                } else {
+                    $current = $candidate;
+                }
+            }
+            $lines[] = $current;
+        }
+
+        return $lines;
+    }
+
+    /**
+     * Word-wraps $text to fit $width, drawing one cell() per line starting
+     * at the current Y. Does not advance the cursor; call advanceY() with
+     * the returned height explicitly.
+     *
+     * @throws \Com\Tecnick\Pdf\Page\Exception
+     * @throws \Com\Tecnick\Pdf\Font\Exception
+     * @throws \Com\Tecnick\Unicode\Exception
+     */
+    public function multiCell(float $x, float $width, float $lineHeight, string $text, string $align = 'L'): float
+    {
+        $lines = $this->wrapLines($text, $width);
+        $startY = $this->y;
+
+        foreach ($lines as $line) {
+            $this->cell($x, $width, $lineHeight, $line, $align);
+            $this->y += $lineHeight;
+        }
+
+        $height = $this->y - $startY;
+        $this->y = $startY;
+
+        return $height;
+    }
+
+    /**
+     * @throws \Com\Tecnick\Pdf\Font\Exception
+     */
+    private function textWidth(string $text): float
+    {
+        return $this->engine->toUnit(
+            $this->engine->font->getOrdArrWidth($this->engine->uniconv->strToOrdArr($text)),
+        );
+    }
+
+    /**
      * Draws a single-line, TCPDF Cell()-like block at the current Y and the
      * given X, optionally with a background fill and/or a top border rule.
      * Does not advance the cursor; call advanceY() explicitly.
@@ -171,6 +265,9 @@ final class InvoiceDocument
      * onto extra lines by default, which would break this class's fixed
      * row heights. $fit defaults to 'T' (truncate instead of wrap) so a
      * too-long value is cut off rather than silently growing the row.
+     * @throws \Com\Tecnick\Pdf\Page\Exception
+     * @throws \Com\Tecnick\Pdf\Font\Exception
+     * @throws \Com\Tecnick\Unicode\Exception
      */
     public function cell(
         float $x,
@@ -190,7 +287,7 @@ final class InvoiceDocument
                     $width,
                     $height,
                     'F',
-                    ['all' => ['fillColor' => \vsprintf('rgb(%d,%d,%d)', $fillRgb)]],
+                    ['all' => ['fillColor' => vsprintf('rgb(%d,%d,%d)', $fillRgb)]],
                 ),
                 $this->pid,
             );
@@ -230,6 +327,16 @@ final class InvoiceDocument
     /**
      * Adds the "page N / total" footer to every page, then writes the raw
      * PDF bytes to $outputPath.
+     * @throws \Com\Tecnick\Pdf\Page\Exception
+     * @throws \Com\Tecnick\Pdf\Font\Exception
+     * @throws \Com\Tecnick\Unicode\Exception
+     * @throws PdfException
+     * @throws FileException
+     * @throws UnicodeException
+     * @throws EncryptException
+     * @throws FontException
+     * @throws PageException
+     * @throws \Throwable
      */
     public function outputTo(string $outputPath): void
     {

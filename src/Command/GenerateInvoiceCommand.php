@@ -201,7 +201,8 @@ final class GenerateInvoiceCommand extends Command
         $io->section('Billed tasks');
 
         do {
-            $description = $io->ask('Task description', validator: $this->requiredValidator());
+            $title = $io->ask('Task title', validator: $this->requiredValidator());
+            $description = $io->ask('Task description (optional)', '');
             $category = $io->choice('Category', $categories);
 
             if ($category === self::OTHER_CATEGORY_LABEL) {
@@ -211,10 +212,10 @@ final class GenerateInvoiceCommand extends Command
             $hours = (float) $io->ask('Number of hours', validator: $this->positiveFloatValidator());
             $rate = (float) $io->ask('Hourly rate', (string) $defaultRate, $this->positiveFloatValidator());
 
-            $tasks[] = new Task($description, $category, $hours, $rate);
+            $tasks[] = new Task($title, $category, $hours, $rate, $description !== '' ? $description : null);
 
             number_format($hours * $rate, 2, ',', '')
-                |> (static fn($x) => \sprintf('  → %s: %s %s', $description, $x, $config->defaults->currency))
+                |> (static fn($x) => \sprintf('  → %s: %s %s', $title, $x, $config->defaults->currency))
                 |> $io->text(...);
         } while ($this->confirmYesNo($io, 'Add another task?', true));
 

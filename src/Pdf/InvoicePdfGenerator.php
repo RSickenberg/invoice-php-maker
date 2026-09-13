@@ -4,6 +4,12 @@ declare(strict_types=1);
 
 namespace RSickenberg\InvoicePhpMaker\Pdf;
 
+use Com\Tecnick\File\Exception as FileException;
+use Com\Tecnick\Pdf\Encrypt\Exception as EncryptException;
+use Com\Tecnick\Pdf\Exception as PdfException;
+use Com\Tecnick\Pdf\Font\Exception as FontException;
+use Com\Tecnick\Pdf\Page\Exception as PageException;
+use Com\Tecnick\Unicode\Exception as UnicodeException;
 use RSickenberg\InvoicePhpMaker\Config\AppConfig;
 use RSickenberg\InvoicePhpMaker\Invoice\Invoice;
 use RSickenberg\InvoicePhpMaker\Invoice\Task;
@@ -30,6 +36,16 @@ final class InvoicePdfGenerator
 
     /**
      * @throws \RuntimeException
+     * @throws \Com\Tecnick\Pdf\Font\Exception
+     * @throws \Com\Tecnick\Pdf\Page\Exception
+     * @throws \Com\Tecnick\Unicode\Exception
+     * @throws PdfException
+     * @throws FileException
+     * @throws UnicodeException
+     * @throws EncryptException
+     * @throws FontException
+     * @throws PageException
+     * @throws \Throwable
      */
     public function generate(Invoice $invoice, AppConfig $config, string $outputPath): void
     {
@@ -49,6 +65,11 @@ final class InvoicePdfGenerator
         $doc->outputTo($outputPath);
     }
 
+    /**
+     * @throws \Com\Tecnick\Pdf\Font\Exception
+     * @throws \Com\Tecnick\Unicode\Exception
+     * @throws \Com\Tecnick\Pdf\Page\Exception
+     */
     private function drawFirstPageHeader(InvoiceDocument $doc, Invoice $invoice, AppConfig $config, string $lang): void
     {
         $halfWidth = self::CONTENT_WIDTH / 2;
@@ -85,6 +106,11 @@ final class InvoicePdfGenerator
         $doc->advanceY(8);
     }
 
+    /**
+     * @throws \Com\Tecnick\Pdf\Font\Exception
+     * @throws \Com\Tecnick\Unicode\Exception
+     * @throws \Com\Tecnick\Pdf\Page\Exception
+     */
     private function drawClientBlock(InvoiceDocument $doc, Invoice $invoice, string $lang): void
     {
         $client = $invoice->client;
@@ -107,11 +133,16 @@ final class InvoicePdfGenerator
         $doc->advanceY(6);
     }
 
+    /**
+     * @throws \Com\Tecnick\Pdf\Font\Exception
+     * @throws \Com\Tecnick\Pdf\Page\Exception
+     * @throws \Com\Tecnick\Unicode\Exception
+     */
     private function drawTasksTable(InvoiceDocument $doc, Invoice $invoice, string $lang): void
     {
         // 'amount' gets 33mm rather than the original 25mm: unlike TCPDF's Cell(),
         // tc-lib-pdf wraps text that overflows its cell instead of letting it spill
-        // into the neighbouring column, so totals need enough width to render on
+        // into the neighboring column, so totals need enough width to render on
         // one line up to about six figures. Borrowed from 'category' (short labels).
         $widths = ['description' => 70, 'category' => 32, 'hours' => 20, 'rate' => 25, 'amount' => self::CONTENT_WIDTH - 147];
         $x = [
@@ -140,15 +171,28 @@ final class InvoicePdfGenerator
         foreach ($tasksByCategory as $category => $tasks) {
             /** @var list<Task> $tasks */
             foreach ($tasks as $task) {
-                $doc->ensureRoom(6);
+                $descriptionHeight = 0.0;
+                if ($task->description !== null) {
+                    $doc->setFont('I', 8);
+                    $descriptionHeight = \count($doc->wrapLines($task->description, $widths['description'])) * 4;
+                }
+
+                $doc->ensureRoom(6 + $descriptionHeight);
                 $doc->setFont('', 9);
                 $doc->setTextColor(0, 0, 0);
-                $doc->cell($x['description'], $widths['description'], 6, $task->description, 'L');
+                $doc->cell($x['description'], $widths['description'], 6, $task->title, 'L');
                 $doc->cell($x['category'], $widths['category'], 6, $task->category, 'L');
                 $doc->cell($x['hours'], $widths['hours'], 6, number_format($task->hours, 2, ',', ''), 'R');
                 $doc->cell($x['rate'], $widths['rate'], 6, number_format($task->hourlyRate, 2, ',', ''), 'R');
                 $doc->cell($x['amount'], $widths['amount'], 6, number_format($task->amount(), 2, ',', ''), 'R');
                 $doc->advanceY(6);
+
+                if ($task->description !== null) {
+                    $doc->setFont('I', 8);
+                    $doc->setTextColor(120, 120, 120);
+                    $doc->advanceY($doc->multiCell($x['description'], $widths['description'], 4, $task->description, 'L'));
+                    $doc->setTextColor(0, 0, 0);
+                }
             }
 
             $subtotal = array_sum(array_map(static fn(Task $t) => $t->amount(), $tasks));
@@ -176,6 +220,11 @@ final class InvoicePdfGenerator
         $doc->advanceY(4);
     }
 
+    /**
+     * @throws \Com\Tecnick\Pdf\Font\Exception
+     * @throws \Com\Tecnick\Unicode\Exception
+     * @throws \Com\Tecnick\Pdf\Page\Exception
+     */
     private function drawPaymentTermNote(InvoiceDocument $doc, Invoice $invoice, string $lang): void
     {
         $doc->ensureRoom(6);

@@ -7,10 +7,11 @@ namespace RSickenberg\InvoicePhpMaker\Invoice;
 final readonly class Task
 {
     public function __construct(
-        public string $description,
+        public string $title,
         public string $category,
         public float $hours,
         public float $hourlyRate,
+        public ?string $description = null,
     ) {}
 
     public function amount(): float
