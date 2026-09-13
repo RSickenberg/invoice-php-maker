@@ -202,11 +202,7 @@ final class InvoicePdfGenerator
             $doc->setFont('I', 8);
             $doc->setTextColor(90, 90, 90);
             $labelWidth = $widths['description'] + $widths['category'] + $widths['hours'] + $widths['rate'];
-            $doc->cell($x['description'], $labelWidth, 6, \sprintf(
-                '%s %s',
-                Translations::get('subtotal', $lang),
-                $category
-            ), 'R', null, true);
+            $doc->cell($x['description'], $labelWidth, 6, Translations::get('subtotal', $lang), 'R', null, true);
             $doc->cell($x['amount'], $widths['amount'], 6, number_format($subtotal, 2, ',', '') . ' ' . $invoice->currency, 'R', null, true);
             $doc->advanceY(6);
             $doc->setTextColor(0, 0, 0);

@@ -82,7 +82,7 @@ final class InvoiceLedger
      */
     private function rollbackSequenceIfLast(string $number): bool
     {
-        if (\preg_match('/^(\d{4})-(\d+)$/', $number, $matches) !== 1) {
+        if (preg_match('/^(\d{4})-(\d+)$/', $number, $matches) !== 1) {
             return false;
         }
 

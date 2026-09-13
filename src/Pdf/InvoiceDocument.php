@@ -56,6 +56,9 @@ final class InvoiceDocument
     /** @var list<int> Every page id created for this document, in order. */
     private array $pageIds = [];
 
+    /** @var array{int, int, int} Last color passed to setTextColor(), re-applied after a filled cell background. */
+    private array $textColor = [0, 0, 0];
+
     /**
      * @throws \Com\Tecnick\Pdf\Font\Exception
      * @throws \Com\Tecnick\Pdf\Page\Exception
@@ -120,6 +123,7 @@ final class InvoiceDocument
      */
     public function setTextColor(int $r, int $g, int $b): void
     {
+        $this->textColor = [$r, $g, $b];
         $this->engine->page->addContent(
             $this->engine->graph->getStyleCmd(['fillColor' => \sprintf('rgb(%d,%d,%d)', $r, $g, $b)]),
             $this->pid,
@@ -340,6 +344,10 @@ final class InvoiceDocument
                 ),
                 $this->pid,
             );
+            // tc-lib-pdf's fill-rect emits a raw, unscoped "rg" color operator that
+            // stays active for whatever is drawn next -- including the text below,
+            // which would otherwise render in the background's own color.
+            $this->setTextColor(...$this->textColor);
         }
 
         if ($borderTop) {
