@@ -1,0 +1,32 @@
+{
+  "creditor": {
+    "name": "Romain Sickenberg",
+    "street": "Example Street",
+    "houseNumber": "1",
+    "postalCode": "1000",
+    "city": "Lausanne",
+    "country": "CH"
+  },
+  "iban": "CH9300762011623852957",
+  "email": "me@example.com",
+  "phone": "+41 79 000 00 00",
+  "website": "https://example.com",
+  "defaults": {
+    "hourlyRate": 120.0,
+    "currency": "CHF",
+    "paymentTermDays": 30,
+    "language": "fr"
+  },
+  "vatEnabled": false,
+  "categories": [
+    "Development",
+    "Design",
+    "Documentation",
+    "Debug / Fix",
+    "Consulting / Audit",
+    "Meeting",
+    "DevOps / Deployment",
+    "Tests / QA",
+    "Business development"
+  ]
+}

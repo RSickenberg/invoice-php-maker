@@ -1,0 +1,25 @@
+{
+    "name": "rsickenberg/invoice-php-maker",
+    "description": "CLI tool to generate Swiss qr bills.",
+    "type": "project",
+    "license": "MIT",
+    "require": {
+        "php": "^8.5",
+        "symfony/console": "^8.1",
+        "tecnickcom/tcpdf": "^7.0.9",
+        "sprain/swiss-qr-bill": "^5.3"
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.95"
+    },
+    "autoload": {
+        "psr-4": {
+            "RSickenberg\\InvoicePhpMaker\\": "src/"
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}

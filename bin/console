@@ -1,0 +1,38 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+use RSickenberg\InvoicePhpMaker\Command\GenerateInvoiceCommand;
+use RSickenberg\InvoicePhpMaker\Command\MarkPaidCommand;
+use RSickenberg\InvoicePhpMaker\Config\AppConfigRepository;
+use RSickenberg\InvoicePhpMaker\Config\ClientRepository;
+use RSickenberg\InvoicePhpMaker\Invoice\InvoiceLedger;
+use Symfony\Component\Console\Application;
+
+$autoloadFiles = [
+    __DIR__ . '/../vendor/autoload.php',
+    __DIR__ . '/../../../autoload.php',
+];
+
+foreach ($autoloadFiles as $autoloadFile) {
+    if (is_file($autoloadFile)) {
+        require $autoloadFile;
+        break;
+    }
+}
+
+$projectDir = dirname(__DIR__);
+
+$configRepository = new AppConfigRepository($projectDir . '/config/config.json');
+$clientRepository = new ClientRepository($projectDir . '/config/clients.json');
+$ledger = new InvoiceLedger($projectDir . '/invoices.json');
+
+$application = new Application('invoice-php-maker', '0.1.0');
+$application->addCommands([
+    new GenerateInvoiceCommand($projectDir, $configRepository, $clientRepository, $ledger),
+    new MarkPaidCommand($ledger),
+]);
+$application->setDefaultCommand('invoice:generate', false);
+
+exit($application->run());
