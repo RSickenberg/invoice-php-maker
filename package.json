@@ -1,0 +1,13 @@
+{
+  "name": "invoice-php-maker",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^7.0.2"
+  },
+  "dependencies": {
+    "release-it": "*"
+  }
+}
