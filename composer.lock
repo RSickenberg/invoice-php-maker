@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "523f4997a104736f2db5c2ccd262e910",
+    "content-hash": "3ea8eb2e9546295dc612f4d910a90c3e",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -514,10 +514,17 @@
         },
         {
             "name": "sprain/swiss-qr-bill",
-            "version": "dev-pr-299-tclibpdf",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/RSickenberg/php-swiss-qr-bill.git",
+                "reference": "8e5df9287272feda2f9bc572a2fc16dd3b167796"
+            },
             "dist": {
                 "type": "zip",
-                "url": "https://github.com/sprain/php-swiss-qr-bill/archive/8e5df9287272feda2f9bc572a2fc16dd3b167796.zip"
+                "url": "https://api.github.com/repos/RSickenberg/php-swiss-qr-bill/zipball/8e5df9287272feda2f9bc572a2fc16dd3b167796",
+                "reference": "8e5df9287272feda2f9bc572a2fc16dd3b167796",
+                "shasum": ""
             },
             "require": {
                 "endroid/qr-code": "^4.4.4|^5.0|^6.0",
@@ -530,12 +537,71 @@
                 "symfony/polyfill-mbstring": "^1.30",
                 "symfony/validator": "^6.3|^7.0|^8.0"
             },
+            "require-dev": {
+                "dg/bypass-finals": "^1.8",
+                "dms/phpunit-arraysubset-asserts": "^0.5",
+                "fpdf/fpdf": "^1.85",
+                "friendsofphp/php-cs-fixer": "^3.15",
+                "khanamiryan/qrcode-detector-decoder": "^2.0.2",
+                "nunomaduro/mock-final-classes": "^1.2",
+                "phpstan/phpstan": "^1.11-dev",
+                "phpunit/phpunit": "^10.5",
+                "rector/rector": "^1.2",
+                "setasign/fpdf": "^1.8.2",
+                "setasign/fpdi": "^2.3.5",
+                "tecnickcom/tc-lib-pdf": "^8.20",
+                "tecnickcom/tcpdf": "^6.3.2"
+            },
+            "suggest": {
+                "fpdf/fpdf": "Needed to create pdfs with FpdfOutput",
+                "setasign/fpdf": "Needed to create pdfs with Fpdi",
+                "setasign/fpdi": "Needed to create pdfs with Fpdi",
+                "tecnickcom/tc-lib-pdf": "Needed to create pdfs with TcLibPdfOutput",
+                "tecnickcom/tcpdf": "Needed to create pdfs with TcPdfOutput"
+            },
+            "default-branch": true,
             "type": "library",
             "autoload": {
                 "psr-4": {
                     "Sprain\\SwissQrBill\\": "src"
                 }
-            }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Sprain\\Tests\\SwissQrBill\\": "tests"
+                }
+            },
+            "scripts": {
+                "cs:fix": [
+                    "vendor/bin/php-cs-fixer fix --verbose"
+                ],
+                "cs:diff": [
+                    "vendor/bin/php-cs-fixer fix --dry-run --diff --verbose"
+                ],
+                "phpstan": [
+                    "vendor/bin/phpstan analyse"
+                ],
+                "phpunit": [
+                    "vendor/bin/phpunit"
+                ],
+                "rector": [
+                    "vendor/bin/rector"
+                ]
+            },
+            "license": [
+                "MIT"
+            ],
+            "description": "A PHP library to create Swiss QR bills",
+            "support": {
+                "source": "https://github.com/RSickenberg/php-swiss-qr-bill/tree/master"
+            },
+            "funding": [
+                {
+                    "type": "github",
+                    "url": "https://github.com/sprain"
+                }
+            ],
+            "time": "2026-07-06T13:09:09+00:00"
         },
         {
             "name": "symfony/clock",
