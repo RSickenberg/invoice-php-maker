@@ -6,6 +6,9 @@ namespace RSickenberg\InvoicePhpMaker\Invoice;
 
 final class InvoiceLedgerEntry
 {
+    /**
+     * @param ?list<Task> $tasks Null for invoices issued before lines were stored (they cannot be regenerated).
+     */
     public function __construct(
         public readonly string $number,
         public readonly string $clientId,
@@ -16,6 +19,9 @@ final class InvoiceLedgerEntry
         public readonly string $dueDate,
         public bool $paid = false,
         public ?string $paidAt = null,
+        public readonly string $language = 'fr',
+        public readonly ?array $tasks = null,
+        public readonly ?int $paymentTermDays = null,
     ) {}
 
     /**
@@ -33,6 +39,9 @@ final class InvoiceLedgerEntry
             'dueDate' => $this->dueDate,
             'paid' => $this->paid,
             'paidAt' => $this->paidAt,
+            'language' => $this->language,
+            'paymentTermDays' => $this->paymentTermDays,
+            'tasks' => $this->tasks === null ? null : array_map(static fn(Task $t) => $t->toArray(), $this->tasks),
         ];
     }
 
@@ -51,6 +60,9 @@ final class InvoiceLedgerEntry
             dueDate: $data['dueDate'],
             paid: (bool) ($data['paid'] ?? false),
             paidAt: $data['paidAt'] ?? null,
+            language: $data['language'] ?? 'fr',
+            tasks: isset($data['tasks']) ? array_map(Task::fromArray(...), $data['tasks']) : null,
+            paymentTermDays: $data['paymentTermDays'] ?? null,
         );
     }
 }

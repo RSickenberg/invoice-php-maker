@@ -7,7 +7,7 @@ COMPOSER_EXEC = composer
 NUMBER        =
 ID            =
 ARGS          =
-.PHONY        : help install update fonts generate list mark-paid delete edit-client lint lint-check
+.PHONY        : help install update fonts generate list mark-paid delete edit regenerate edit-client lint lint-check
 
 ## —— 🧾 The Invoice PHP Maker Makefile 🧾 ——————————————————————
 help: ## Outputs this help screen
@@ -32,6 +32,12 @@ list: ## List all invoices (add ARGS=--unpaid for open ones only)
 
 mark-paid: ## Mark an invoice as paid (interactive; or NUMBER=2026-001)
 	@$(PHP_EXEC) bin/console invoice:mark-paid $(NUMBER)
+
+edit: ## Edit an invoice (date, term, language, tasks) and regenerate its PDF (interactive; or NUMBER=2026-001)
+	@$(PHP_EXEC) bin/console invoice:edit $(NUMBER)
+
+regenerate: ## Regenerate an invoice's PDF from stored data, e.g. make regenerate NUMBER=2026-001
+	@$(PHP_EXEC) bin/console invoice:edit $(NUMBER) --regenerate
 
 delete: ## Delete an invoice (ledger entry and PDF), e.g. make delete NUMBER=2026-001
 	@$(PHP_EXEC) bin/console invoice:delete $(NUMBER)
