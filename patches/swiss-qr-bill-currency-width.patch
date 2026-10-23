@@ -1,0 +1,20 @@
+--- a/src/PaymentPart/Output/TcLibPdfOutput/TcLibPdfOutput.php	2026-10-23 14:51:34
++++ b/src/PaymentPart/Output/TcLibPdfOutput/TcLibPdfOutput.php	2026-10-23 14:51:34
+@@ -180,7 +180,7 @@
+     {
+         $this->currentY = self::CURRENCY_AMOUNT_Y;
+         foreach ($this->getCurrencyElements() as $currencyElement) {
+-            $this->setContentElement($currencyElement, true, self::LEFT_PART_X, 10);
++            $this->setContentElement($currencyElement, true, self::LEFT_PART_X, 20);
+         }
+     }
+ 
+@@ -196,7 +196,7 @@
+     {
+         $this->currentY = self::CURRENCY_AMOUNT_Y;
+         foreach ($this->getCurrencyElements() as $currencyElement) {
+-            $this->setContentElement($currencyElement, false, self::RIGHT_PART_X, 10);
++            $this->setContentElement($currencyElement, false, self::RIGHT_PART_X, 20);
+         }
+     }
+ 
