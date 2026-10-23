@@ -4,6 +4,7 @@
 declare(strict_types=1);
 
 use RSickenberg\InvoicePhpMaker\Command\DeleteInvoiceCommand;
+use RSickenberg\InvoicePhpMaker\Command\EditClientCommand;
 use RSickenberg\InvoicePhpMaker\Command\GenerateInvoiceCommand;
 use RSickenberg\InvoicePhpMaker\Command\ListInvoicesCommand;
 use RSickenberg\InvoicePhpMaker\Command\MarkPaidCommand;
@@ -41,6 +42,7 @@ $application->addCommands([
     new ListInvoicesCommand($ledger),
     new MarkPaidCommand($ledger),
     new DeleteInvoiceCommand($projectDir, $ledger),
+    new EditClientCommand($clientRepository),
 ]);
 $application->setDefaultCommand('invoice:generate', false);
 
