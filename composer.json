@@ -5,10 +5,11 @@
     "license": "MIT",
     "require": {
         "php": "^8.5",
-        "symfony/console": "^8.1",
-        "tecnickcom/tc-lib-pdf": "^8.20",
+        "cweagans/composer-patches": "^2",
+        "nesbot/carbon": "^3.14",
         "sprain/swiss-qr-bill": "dev-master#8e5df9287272feda2f9bc572a2fc16dd3b167796",
-        "nesbot/carbon": "^3.14"
+        "symfony/console": "^8.1",
+        "tecnickcom/tc-lib-pdf": "^8.20"
     },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^3.95"
@@ -29,8 +30,18 @@
         }
     ],
     "config": {
-        "sort-packages": true
+        "sort-packages": true,
+        "allow-plugins": {
+            "cweagans/composer-patches": true
+        }
     },
     "minimum-stability": "stable",
-    "prefer-stable": true
+    "prefer-stable": true,
+    "extra": {
+        "patches": {
+            "sprain/swiss-qr-bill": {
+                "Widen the currency label so \"Monnaie\" does not wrap": "patches/swiss-qr-bill-currency-width.patch"
+            }
+        }
+    }
 }

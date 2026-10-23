@@ -34,19 +34,25 @@ Both files are git-ignored, as are `invoices.json` and the `invoices/` folder.
 | List open (unpaid) invoices only | `make list ARGS=--unpaid` |
 | Mark an invoice as paid (interactive) | `make mark-paid` |
 | Mark a given invoice as paid | `make mark-paid NUMBER=2026-001` |
-| Delete an invoice (ledger entry and PDF) | `make delete NUMBER=2026-001` |
+| Edit an invoice (date, term, language, tasks) and regenerate its PDF | `make edit` (or `NUMBER=2026-001`) |
+| Regenerate an invoice's PDF as stored | `make regenerate NUMBER=2026-001` |
+| Delete an invoice (ledger entry and PDF, interactive) | `make delete` (or `NUMBER=2026-001`) |
 | Edit an existing client (interactive) | `make edit-client` (or `ID=acme-sa`) |
 | Fix code style | `make lint` |
 | Check code style (no changes) | `make lint-check` |
 | Show all commands | `make help` |
 
-Each `make` target wraps a console command, so `bin/console invoice:generate`, `invoice:list [--unpaid]`, `invoice:mark-paid [number]`, `invoice:delete <number>` and `client:edit [id]` work too.
+Each `make` target wraps a console command, so `bin/console invoice:generate`, `invoice:list [--unpaid]`, `invoice:mark-paid [number]`, `invoice:delete [number]` and `client:edit [id]`, `invoice:edit [number] [--regenerate]` work too.
 
 ### Generating an invoice
 
 `make generate` walks you through choosing or creating a client, the invoice language, the tasks and hours per category, the rate and the payment term. The PDF is written under `invoices/` and the invoice is recorded in `invoices.json`.
 
 Invoice numbers are sequential and reset every year (`2026-001`, `2026-002`, …). Deleting the latest invoice of a year frees its number for the next one.
+
+### Dates, months and editing
+
+`invoice:generate` asks for the invoice date (defaults to today) and, for each task, the month the work was done (`YYYY-MM`). The PDF groups tasks under a month heading (Mai 2026, Juin 2026, …) with a subtotal per month. Every invoice's tasks, language and payment term are stored in `invoices.json`, so `make edit` can change them later and `make regenerate` rebuilds the PDF as stored. Invoices generated before this was added have no stored tasks and cannot be edited.
 
 ### Marking an invoice as paid
 

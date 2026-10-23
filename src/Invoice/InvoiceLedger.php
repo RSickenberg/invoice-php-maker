@@ -44,6 +44,24 @@ final class InvoiceLedger
     }
 
     /**
+     * Replaces the stored entry that has the same number as $entry.
+     *
+     * @throws \JsonException
+     */
+    public function replaceEntry(InvoiceLedgerEntry $entry): void
+    {
+        $this->load();
+
+        $index = array_find_key($this->entries, static fn($e) => $e->number === $entry->number);
+        if ($index === null) {
+            throw new RuntimeException(\sprintf('No invoice "%s" found in the ledger.', $entry->number));
+        }
+
+        $this->entries[$index] = $entry;
+        $this->persist();
+    }
+
+    /**
      * @throws \JsonException
      */
     public function findByNumber(string $number): ?InvoiceLedgerEntry

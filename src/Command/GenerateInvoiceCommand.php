@@ -5,35 +5,32 @@ declare(strict_types=1);
 namespace RSickenberg\InvoicePhpMaker\Command;
 
 use Carbon\CarbonImmutable;
-use InvalidArgumentException;
-use RSickenberg\InvoicePhpMaker\Config\AppConfig;
 use RSickenberg\InvoicePhpMaker\Config\AppConfigRepository;
 use RSickenberg\InvoicePhpMaker\Config\Client;
 use RSickenberg\InvoicePhpMaker\Config\ClientRepository;
 use RSickenberg\InvoicePhpMaker\Invoice\Invoice;
 use RSickenberg\InvoicePhpMaker\Invoice\InvoiceLedger;
 use RSickenberg\InvoicePhpMaker\Invoice\InvoiceLedgerEntry;
+use RSickenberg\InvoicePhpMaker\Invoice\Money;
 use RSickenberg\InvoicePhpMaker\Invoice\PaymentTerm;
-use RSickenberg\InvoicePhpMaker\Invoice\Task;
+use RSickenberg\InvoicePhpMaker\Invoice\Slug;
 use RSickenberg\InvoicePhpMaker\Pdf\InvoicePdfGenerator;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 #[AsCommand(name: 'invoice:generate', description: 'Generates a PDF invoice with a Swiss QR-bill by answering a few questions')]
 final class GenerateInvoiceCommand extends Command
 {
-    private const string OTHER_CATEGORY_LABEL = 'Other';
-
     public function __construct(
         private readonly string $projectDir,
         private readonly AppConfigRepository $configRepository,
         private readonly ClientRepository $clientRepository,
         private readonly InvoiceLedger $ledger,
         private readonly InvoicePdfGenerator $pdfGenerator = new InvoicePdfGenerator(),
+        private readonly InvoicePrompter $prompter = new InvoicePrompter(),
     ) {
         parent::__construct();
     }
@@ -49,8 +46,9 @@ final class GenerateInvoiceCommand extends Command
         $config = $this->configRepository->load();
         $client = $this->resolveClient($io);
 
-        $language = $this->askLanguage($io, $client, $config);
-        $tasks = $this->askTasks($io, $config, $client);
+        $issueDate = $this->prompter->askIssueDate($io, CarbonImmutable::today());
+        $language = $this->prompter->askLanguage($io, $client->language ?? $config->defaults->language);
+        $tasks = $this->prompter->askTasks($io, $config, $client);
 
         if ($tasks === []) {
             $io->outlineError('No task entered, invoice cancelled.');
@@ -58,9 +56,8 @@ final class GenerateInvoiceCommand extends Command
             return Command::FAILURE;
         }
 
-        $paymentTerm = $this->askPaymentTerm($io, $client, $config, $language);
+        $paymentTerm = $this->prompter->askPaymentTerm($io, $client->paymentTermDays ?? $config->defaults->paymentTermDays, $language);
 
-        $issueDate = CarbonImmutable::today();
         $number = $this->ledger->nextInvoiceNumber((int) $issueDate->format('Y'));
 
         $invoice = new Invoice(
@@ -78,7 +75,7 @@ final class GenerateInvoiceCommand extends Command
             rtrim($this->projectDir, '/'),
             $issueDate->format('Y'),
             $number,
-            $this->slugify($client->name)
+            Slug::of($client->name)
         );
 
         $this->pdfGenerator->generate($invoice, $config, $outputPath);
@@ -91,13 +88,16 @@ final class GenerateInvoiceCommand extends Command
             currency: $invoice->currency,
             issueDate: $issueDate->format('Y-m-d'),
             dueDate: $invoice->dueDate()->format('Y-m-d'),
+            language: $language,
+            tasks: $tasks,
+            paymentTermDays: $paymentTerm->value,
         ));
 
         $io->outlineSuccess(\sprintf(
             "Invoice %s generated: %s\nTotal: %s %s, due on %s",
             $number,
             $outputPath,
-            number_format($invoice->totalAmount(), 2, ',', ' '),
+            Money::format($invoice->totalAmount()),
             $invoice->currency,
             $invoice->dueDate()->format('d.m.Y')
         ));
@@ -138,20 +138,20 @@ final class GenerateInvoiceCommand extends Command
     {
         $io->section('New client');
 
-        $name = $io->ask('Client / company name', validator: $this->requiredValidator());
-        $street = $io->ask('Street', validator: $this->requiredValidator());
+        $name = $io->ask('Client / company name', validator: $this->prompter->requiredValidator());
+        $street = $io->ask('Street', validator: $this->prompter->requiredValidator());
         $houseNumber = $io->ask('Building number', '');
-        $postalCode = $io->ask('Postal code', validator: $this->requiredValidator());
-        $city = $io->ask('City', validator: $this->requiredValidator());
+        $postalCode = $io->ask('Postal code', validator: $this->prompter->requiredValidator());
+        $city = $io->ask('City', validator: $this->prompter->requiredValidator());
         $country = $io->ask('Country (ISO code)', 'CH');
 
         $hourlyRate = null;
-        if ($this->confirmYesNo($io, 'Does this client have a different hourly rate than the default?', false)) {
-            $hourlyRate = (float) $io->ask('Hourly rate for this client', validator: $this->positiveFloatValidator());
+        if ($this->prompter->confirmYesNo($io, 'Does this client have a different hourly rate than the default?', false)) {
+            $hourlyRate = (float) $io->ask('Hourly rate for this client', validator: $this->prompter->positiveFloatValidator());
         }
 
         $paymentTermDays = null;
-        if ($this->confirmYesNo($io, 'Does this client have a different payment term than the default?', false)) {
+        if ($this->prompter->confirmYesNo($io, 'Does this client have a different payment term than the default?', false)) {
             $paymentTermDays = (int) $io->choice(
                 'Payment term for this client',
                 array_map(static fn(PaymentTerm $t) => (string) $t->value, PaymentTerm::all())
@@ -159,12 +159,12 @@ final class GenerateInvoiceCommand extends Command
         }
 
         $language = null;
-        if ($this->confirmYesNo($io, 'Does this client have a different invoice language than the default?', false)) {
+        if ($this->prompter->confirmYesNo($io, 'Does this client have a different invoice language than the default?', false)) {
             $language = $io->choice('Language for this client', ['fr', 'en']);
         }
 
         $client = new Client(
-            id: $this->slugify($name),
+            id: Slug::of($name),
             name: $name,
             street: $street,
             houseNumber: (string) $houseNumber,
@@ -179,99 +179,5 @@ final class GenerateInvoiceCommand extends Command
         $this->clientRepository->save($client);
 
         return $client;
-    }
-
-    private function askLanguage(SymfonyStyle $io, Client $client, AppConfig $config): string
-    {
-        $default = $client->language ?? $config->defaults->language;
-
-        return $io->choice('Invoice language', ['fr', 'en'], $default);
-    }
-
-    /**
-     * @return list<Task>
-     */
-    private function askTasks(SymfonyStyle $io, AppConfig $config, Client $client): array
-    {
-        $categories = $config->categories;
-        $categories[] = self::OTHER_CATEGORY_LABEL;
-        $defaultRate = $client->hourlyRate ?? $config->defaults->hourlyRate;
-
-        $tasks = [];
-        $io->section('Billed tasks');
-
-        do {
-            $title = $io->ask('Task title', validator: $this->requiredValidator());
-            $description = trim((string) $io->ask('Task description (optional)', ''));
-            $category = $io->choice('Category', $categories);
-
-            if ($category === self::OTHER_CATEGORY_LABEL) {
-                $category = $io->ask('Category name', validator: $this->requiredValidator());
-            }
-
-            $hours = (float) $io->ask('Number of hours', validator: $this->positiveFloatValidator());
-            $rate = (float) $io->ask('Hourly rate', (string) $defaultRate, $this->positiveFloatValidator());
-
-            $tasks[] = new Task($title, $category, $hours, $rate, $description !== '' ? $description : null);
-
-            number_format($hours * $rate, 2, ',', '')
-                |> (static fn($x) => \sprintf('  → %s: %s %s', $title, $x, $config->defaults->currency))
-                |> $io->text(...);
-        } while ($this->confirmYesNo($io, 'Add another task?', true));
-
-        return $tasks;
-    }
-
-    private function askPaymentTerm(SymfonyStyle $io, Client $client, AppConfig $config, string $language): PaymentTerm
-    {
-        $default = $client->paymentTermDays ?? $config->defaults->paymentTermDays;
-        $choices = array_map(static fn(PaymentTerm $t) => $t->label($language), PaymentTerm::all());
-        $defaultLabel = PaymentTerm::fromDays($default)->label($language);
-
-        $selected = $io->choice('Payment term', $choices, $defaultLabel);
-        $index = array_search($selected, $choices, true);
-
-        return PaymentTerm::all()[$index];
-    }
-
-    private function confirmYesNo(SymfonyStyle $io, string $question, bool $default): bool
-    {
-        $q = new Question(\sprintf('%s (y/n)', $question), $default ? 'y' : 'n');
-        $q->setNormalizer(static fn(?string $answer) => (string) $answer
-                |> trim(...)
-                |> mb_strtolower(...)
-                |> (static fn($x) => str_starts_with($x, 'y')));
-
-        return (bool) $io->askQuestion($q);
-    }
-
-    private function requiredValidator(): callable
-    {
-        return static function (?string $value): string {
-            if ($value === null || trim($value) === '') {
-                throw new InvalidArgumentException('This value cannot be empty.');
-            }
-
-            return $value;
-        };
-    }
-
-    private function positiveFloatValidator(): callable
-    {
-        return static function (?string $value): float {
-            $normalized = str_replace(',', '.', (string) $value);
-            if (!is_numeric($normalized) || (float) $normalized <= 0) {
-                throw new InvalidArgumentException('Please enter a positive number.');
-            }
-
-            return (float) $normalized;
-        };
-    }
-
-    private function slugify(string $value): string
-    {
-        $slug = strtolower((string) preg_replace('/[^a-zA-Z0-9]+/', '-', $value));
-
-        return trim($slug, '-') ?: 'client';
     }
 }

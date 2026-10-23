@@ -10,8 +10,10 @@ use Com\Tecnick\Pdf\Exception as PdfException;
 use Com\Tecnick\Pdf\Font\Exception as FontException;
 use Com\Tecnick\Pdf\Page\Exception as PageException;
 use Com\Tecnick\Unicode\Exception as UnicodeException;
+use Carbon\CarbonImmutable;
 use RSickenberg\InvoicePhpMaker\Config\AppConfig;
 use RSickenberg\InvoicePhpMaker\Invoice\Invoice;
+use RSickenberg\InvoicePhpMaker\Invoice\Money;
 use RSickenberg\InvoicePhpMaker\Invoice\Task;
 use RSickenberg\InvoicePhpMaker\QrBill\QrBillFactory;
 use RuntimeException;
@@ -144,7 +146,7 @@ final class InvoicePdfGenerator
         // tc-lib-pdf wraps text that overflows its cell instead of letting it spill
         // into the neighboring column, so totals need enough width to render on
         // one line up to about six figures. Borrowed from 'category' (short labels).
-        $widths = ['description' => 70, 'category' => 32, 'hours' => 20, 'rate' => 25, 'amount' => self::CONTENT_WIDTH - 147];
+        $widths = ['description' => 60, 'category' => 42, 'hours' => 15, 'rate' => 22, 'amount' => self::CONTENT_WIDTH - 139];
         $x = [
             'description' => self::MARGIN,
         ];
@@ -162,13 +164,29 @@ final class InvoicePdfGenerator
         $doc->cell($x['amount'], $widths['amount'], 7, Translations::get('amount', $lang), 'R', [235, 235, 235]);
         $doc->advanceY(7);
 
-        $tasksByCategory = [];
+        $tasksByPeriod = [];
         foreach ($invoice->tasks as $task) {
-            $tasksByCategory[$task->category][] = $task;
+            $tasksByPeriod[$task->period ?? ''][] = $task;
         }
+        ksort($tasksByPeriod);
 
         $doc->setFont('', 9);
-        foreach ($tasksByCategory as $category => $tasks) {
+        foreach ($tasksByPeriod as $period => $tasks) {
+            if ($period !== '') {
+                $doc->ensureRoom(6 + 6);
+                $doc->setFont('B', 9);
+                $doc->cell(
+                    $x['description'],
+                    self::CONTENT_WIDTH,
+                    6,
+                    mb_convert_case(CarbonImmutable::createFromFormat('!Y-m', (string) $period)->locale($lang)->translatedFormat('F Y'), MB_CASE_TITLE),
+                    'L',
+                    [245, 245, 245],
+                );
+                $doc->advanceY(6);
+                $doc->setFont('', 9);
+            }
+
             /** @var list<Task> $tasks */
             foreach ($tasks as $task) {
                 $descriptionLines = null;
@@ -179,15 +197,26 @@ final class InvoicePdfGenerator
                     $descriptionHeight = \count($descriptionLines) * 4;
                 }
 
-                $doc->ensureRoom(6 + $descriptionHeight);
                 $doc->setFont('', 9);
+                $categoryLines = $doc->wrapLines($task->category, $widths['category']);
+                $categoryHeight = \count($categoryLines) > 1 ? \count($categoryLines) * 5 + 2 : 6;
+                $rowHeight = max(6, $categoryHeight);
+
+                $doc->ensureRoom($rowHeight + $descriptionHeight);
                 $doc->setTextColor(0, 0, 0);
                 $doc->cell($x['description'], $widths['description'], 6, $task->title, 'L');
-                $doc->cell($x['category'], $widths['category'], 6, $task->category, 'L');
-                $doc->cell($x['hours'], $widths['hours'], 6, number_format($task->hours, 2, ',', ''), 'R');
-                $doc->cell($x['rate'], $widths['rate'], 6, number_format($task->hourlyRate, 2, ',', ''), 'R');
-                $doc->cell($x['amount'], $widths['amount'], 6, number_format($task->amount(), 2, ',', ''), 'R');
-                $doc->advanceY(6);
+                if (\count($categoryLines) > 1) {
+                    $startY = $doc->y();
+                    $doc->setY($startY + 1);
+                    $doc->multiCell($x['category'], $widths['category'], 5, $task->category, 'L', $categoryLines);
+                    $doc->setY($startY);
+                } else {
+                    $doc->cell($x['category'], $widths['category'], 6, $task->category, 'L');
+                }
+                $doc->cell($x['hours'], $widths['hours'], 6, Money::format($task->hours), 'R');
+                $doc->cell($x['rate'], $widths['rate'], 6, Money::format($task->hourlyRate), 'R');
+                $doc->cell($x['amount'], $widths['amount'], 6, Money::format($task->amount()), 'R');
+                $doc->advanceY($rowHeight);
 
                 if ($task->description !== null) {
                     $doc->setFont('I', 8);
@@ -203,7 +232,7 @@ final class InvoicePdfGenerator
             $doc->setTextColor(90, 90, 90);
             $labelWidth = $widths['description'] + $widths['category'] + $widths['hours'] + $widths['rate'];
             $doc->cell($x['description'], $labelWidth, 6, Translations::get('subtotal', $lang), 'R', null, true);
-            $doc->cell($x['amount'], $widths['amount'], 6, number_format($subtotal, 2, ',', '') . ' ' . $invoice->currency, 'R', null, true);
+            $doc->cell($x['amount'], $widths['amount'], 6, Money::format($subtotal) . ' ' . $invoice->currency, 'R', null, true);
             $doc->advanceY(6);
             $doc->setTextColor(0, 0, 0);
         }
@@ -213,7 +242,7 @@ final class InvoicePdfGenerator
         $doc->setFont('B', 11);
         $labelWidth = $widths['description'] + $widths['category'] + $widths['hours'] + $widths['rate'];
         $doc->cell($x['description'], $labelWidth, 8, Translations::get('total', $lang), 'R', null, true);
-        $doc->cell($x['amount'], $widths['amount'], 8, number_format($invoice->totalAmount(), 2, ',', '') . ' ' . $invoice->currency, 'R', null, true);
+        $doc->cell($x['amount'], $widths['amount'], 8, Money::format($invoice->totalAmount()) . ' ' . $invoice->currency, 'R', null, true);
         $doc->advanceY(8);
         $doc->advanceY(4);
     }

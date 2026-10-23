@@ -1,0 +1,17 @@
+{
+    "_hash": "dba48494bbf536df67448538e620351bc7a62f108a4e3f8f35623ddd004f77f1",
+    "patches": {
+        "sprain/swiss-qr-bill": [
+            {
+                "package": "sprain/swiss-qr-bill",
+                "description": "Widen the currency label so \"Monnaie\" does not wrap",
+                "url": "patches/swiss-qr-bill-currency-width.patch",
+                "sha256": "8225100e325178153c2d005c57601da5fcd03a242fd9607495ac5f3d5bb835dc",
+                "depth": 1,
+                "extra": {
+                    "provenance": "root"
+                }
+            }
+        ]
+    }
+}
