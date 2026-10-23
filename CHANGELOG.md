@@ -1,10 +1,16 @@
 # Changelog
 
-## [v1.0.2](https://github.com/RSickenberg/invoice-php-maker/compare/v1.0.1...v1.0.2)
+## [v1.0.3](https://github.com/RSickenberg/invoice-php-maker/compare/v1.0.2...v1.0.3)
+
+- feat(edit-command): Added edit-command client [`749ccdc`](https://github.com/RSickenberg/invoice-php-maker/commit/749ccdc773ed5200ce9f6cde88d90fd682992f2a)
+- docs(readme): rebuild readme [`c90737a`](https://github.com/RSickenberg/invoice-php-maker/commit/c90737a7adcfc415e826ac5896649b50c913dda9)
+
+## [v1.0.2](https://github.com/RSickenberg/invoice-php-maker/compare/v1.0.1...v1.0.2) (2026-10-23)
 
 - build(composer): updated deps [`9182568`](https://github.com/RSickenberg/invoice-php-maker/commit/9182568c5fa0159ed7f0f66f066d21830c15612b)
 - feat(command): list bills or mark them paid interractively [`5f3a859`](https://github.com/RSickenberg/invoice-php-maker/commit/5f3a8599462eef672445867eefa0f0b956987c73)
 - build(bun): updated deps [`4b15e42`](https://github.com/RSickenberg/invoice-php-maker/commit/4b15e429bb0278e5e666c4f0f4ece449bf79cd8d)
+- chore(release): 1.0.2 [`62ee334`](https://github.com/RSickenberg/invoice-php-maker/commit/62ee334587d8340ba116cff918b94ddb1f2e1e9a)
 - docs(dependabot): added dependabot [`5fd89e5`](https://github.com/RSickenberg/invoice-php-maker/commit/5fd89e574dd4ced636e76b86ff03912705a411a0)
 
 ## [v1.0.1](https://github.com/RSickenberg/invoice-php-maker/compare/v1.0.0...v1.0.1) (2026-09-13)
