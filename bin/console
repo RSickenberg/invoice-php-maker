@@ -5,6 +5,7 @@ declare(strict_types=1);
 
 use RSickenberg\InvoicePhpMaker\Command\DeleteInvoiceCommand;
 use RSickenberg\InvoicePhpMaker\Command\GenerateInvoiceCommand;
+use RSickenberg\InvoicePhpMaker\Command\ListInvoicesCommand;
 use RSickenberg\InvoicePhpMaker\Command\MarkPaidCommand;
 use RSickenberg\InvoicePhpMaker\Config\AppConfigRepository;
 use RSickenberg\InvoicePhpMaker\Config\ClientRepository;
@@ -37,6 +38,7 @@ $ledger = new InvoiceLedger($projectDir . '/invoices.json');
 $application = new Application('invoice-php-maker', '0.1.0');
 $application->addCommands([
     new GenerateInvoiceCommand($projectDir, $configRepository, $clientRepository, $ledger),
+    new ListInvoicesCommand($ledger),
     new MarkPaidCommand($ledger),
     new DeleteInvoiceCommand($projectDir, $ledger),
 ]);

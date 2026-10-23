@@ -6,7 +6,7 @@ COMPOSER_EXEC = composer
 .DEFAULT_GOAL = help
 NUMBER        =
 ARGS          =
-.PHONY        : help install update fonts generate mark-paid delete lint lint-check
+.PHONY        : help install update fonts generate list mark-paid delete lint lint-check
 
 ## —— 🧾 The Invoice PHP Maker Makefile 🧾 ——————————————————————
 help: ## Outputs this help screen
@@ -26,7 +26,10 @@ fonts: ## Rebuild TCPDF standard fonts (runs automatically after install/update)
 generate: ## Generate a new invoice (interactive)
 	@$(PHP_EXEC) bin/console invoice:generate $(ARGS)
 
-mark-paid: ## Mark an invoice as paid, e.g. make mark-paid NUMBER=2026-001
+list: ## List all invoices (add ARGS=--unpaid for open ones only)
+	@$(PHP_EXEC) bin/console invoice:list $(ARGS)
+
+mark-paid: ## Mark an invoice as paid (interactive; or NUMBER=2026-001)
 	@$(PHP_EXEC) bin/console invoice:mark-paid $(NUMBER)
 
 delete: ## Delete an invoice (ledger entry and PDF), e.g. make delete NUMBER=2026-001

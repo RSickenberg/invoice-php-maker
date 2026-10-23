@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace RSickenberg\InvoicePhpMaker\Command;
 
 use Carbon\CarbonImmutable;
+use Carbon\Exceptions\InvalidFormatException;
 use RSickenberg\InvoicePhpMaker\Invoice\InvoiceLedger;
 use RuntimeException;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -24,7 +25,7 @@ final class MarkPaidCommand extends Command
 
     protected function configure(): void
     {
-        $this->addArgument('number', InputArgument::REQUIRED, 'Invoice number, e.g. 2026-001');
+        $this->addArgument('number', InputArgument::OPTIONAL, 'Invoice number, e.g. 2026-001 (prompts to choose an open invoice if omitted)');
     }
 
     /**
@@ -33,8 +34,32 @@ final class MarkPaidCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $number = (string) $input->getArgument('number');
+        $number = $input->getArgument('number');
 
+        if ($number === null) {
+            $open = array_values(array_filter($this->ledger->all(), static fn($entry) => !$entry->paid));
+            if ($open === []) {
+                $io->outlineWarning('No open invoices.');
+
+                return Command::SUCCESS;
+            }
+
+            $choices = [];
+            foreach ($open as $openEntry) {
+                $choices[$openEntry->number] = \sprintf(
+                    '%s — %s — %.2f %s (due %s)',
+                    $openEntry->number,
+                    $openEntry->clientName,
+                    $openEntry->totalAmount,
+                    $openEntry->currency,
+                    $openEntry->dueDate,
+                );
+            }
+
+            $number = (string) $io->choice('Which invoice has been paid?', $choices);
+        }
+
+        $number = (string) $number;
         $entry = $this->ledger->findByNumber($number);
         if ($entry === null) {
             $io->outlineError(\sprintf('No invoice "%s" found in invoices.json.', $number));
@@ -48,8 +73,16 @@ final class MarkPaidCommand extends Command
             return Command::SUCCESS;
         }
 
+        $paidAt = $io->ask('Paid date (YYYY-MM-DD)', CarbonImmutable::today()->toDateString(), static function (?string $value): string {
+            try {
+                return CarbonImmutable::createFromFormat('!Y-m-d', (string) $value)->toDateString();
+            } catch (InvalidFormatException) {
+                throw new \InvalidArgumentException('Use the YYYY-MM-DD format.');
+            }
+        });
+
         try {
-            $this->ledger->markPaid($number, CarbonImmutable::today()->toDateString());
+            $this->ledger->markPaid($number, $paidAt);
         } catch (RuntimeException|\JsonException $e) {
             $io->outlineError($e->getMessage());
 
