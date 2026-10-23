@@ -1,9 +1,17 @@
 # Changelog
 
-## [v1.0.3](https://github.com/RSickenberg/invoice-php-maker/compare/v1.0.2...v1.0.3)
+## [v1.0.4](https://github.com/RSickenberg/invoice-php-maker/compare/v1.0.3...v1.0.4)
+
+- feat/edit-invoices [`#14`](https://github.com/RSickenberg/invoice-php-maker/pull/14)
+- feat(invoice): edit and regenerate invoices, issue date prompt, month grouping [`6db2298`](https://github.com/RSickenberg/invoice-php-maker/commit/6db22983c81e979fa13bdddc431f886144ee03a8)
+- build(composer): apply swiss-qr-bill currency width patch via composer-patches [`baa1996`](https://github.com/RSickenberg/invoice-php-maker/commit/baa19965e2dd747f9c671eb18c6eef493fb7a8e0)
+- fix(notice): fixed php notice [`366e04d`](https://github.com/RSickenberg/invoice-php-maker/commit/366e04d8ed99b91b82f51074932cffc98fc65864)
+
+## [v1.0.3](https://github.com/RSickenberg/invoice-php-maker/compare/v1.0.2...v1.0.3) (2026-10-23)
 
 - feat(edit-command): Added edit-command client [`749ccdc`](https://github.com/RSickenberg/invoice-php-maker/commit/749ccdc773ed5200ce9f6cde88d90fd682992f2a)
 - docs(readme): rebuild readme [`c90737a`](https://github.com/RSickenberg/invoice-php-maker/commit/c90737a7adcfc415e826ac5896649b50c913dda9)
+- chore(release): 1.0.3 [`d95cb3f`](https://github.com/RSickenberg/invoice-php-maker/commit/d95cb3f5b638024a9f6af5e554dc2aef6fd7260a)
 
 ## [v1.0.2](https://github.com/RSickenberg/invoice-php-maker/compare/v1.0.1...v1.0.2) (2026-10-23)
 
