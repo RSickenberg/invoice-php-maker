@@ -1,9 +1,17 @@
 # Changelog
 
-## [v1.0.1](https://github.com/RSickenberg/invoice-php-maker/compare/v1.0.0...v1.0.1)
+## [v1.0.2](https://github.com/RSickenberg/invoice-php-maker/compare/v1.0.1...v1.0.2)
+
+- build(composer): updated deps [`9182568`](https://github.com/RSickenberg/invoice-php-maker/commit/9182568c5fa0159ed7f0f66f066d21830c15612b)
+- feat(command): list bills or mark them paid interractively [`5f3a859`](https://github.com/RSickenberg/invoice-php-maker/commit/5f3a8599462eef672445867eefa0f0b956987c73)
+- build(bun): updated deps [`4b15e42`](https://github.com/RSickenberg/invoice-php-maker/commit/4b15e429bb0278e5e666c4f0f4ece449bf79cd8d)
+- docs(dependabot): added dependabot [`5fd89e5`](https://github.com/RSickenberg/invoice-php-maker/commit/5fd89e574dd4ced636e76b86ff03912705a411a0)
+
+## [v1.0.1](https://github.com/RSickenberg/invoice-php-maker/compare/v1.0.0...v1.0.1) (2026-09-13)
 
 - fix(pdf): fixed table header text being invisble [`b42b72a`](https://github.com/RSickenberg/invoice-php-maker/commit/b42b72a28e017ee340f090c72d6fbb52829d6d58)
 - docs(changelog): added changelog [`b80d083`](https://github.com/RSickenberg/invoice-php-maker/commit/b80d083638cd3d9753e98ab92002fd4dd3c418de)
+- chore(release): 1.0.1 [`b8abb86`](https://github.com/RSickenberg/invoice-php-maker/commit/b8abb86e7276945352ecd969ee691f94fa5d204f)
 
 ## v1.0.0 (2026-09-13)
 
