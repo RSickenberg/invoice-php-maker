@@ -36,13 +36,13 @@ Both files are git-ignored, as are `invoices.json` and the `invoices/` folder.
 | Mark a given invoice as paid | `make mark-paid NUMBER=2026-001` |
 | Edit an invoice (date, term, language, tasks) and regenerate its PDF | `make edit` (or `NUMBER=2026-001`) |
 | Regenerate an invoice's PDF as stored | `make regenerate NUMBER=2026-001` |
-| Delete an invoice (ledger entry and PDF) | `make delete NUMBER=2026-001` |
+| Delete an invoice (ledger entry and PDF, interactive) | `make delete` (or `NUMBER=2026-001`) |
 | Edit an existing client (interactive) | `make edit-client` (or `ID=acme-sa`) |
 | Fix code style | `make lint` |
 | Check code style (no changes) | `make lint-check` |
 | Show all commands | `make help` |
 
-Each `make` target wraps a console command, so `bin/console invoice:generate`, `invoice:list [--unpaid]`, `invoice:mark-paid [number]`, `invoice:delete <number>` and `client:edit [id]`, `invoice:edit [number] [--regenerate]` work too.
+Each `make` target wraps a console command, so `bin/console invoice:generate`, `invoice:list [--unpaid]`, `invoice:mark-paid [number]`, `invoice:delete [number]` and `client:edit [id]`, `invoice:edit [number] [--regenerate]` work too.
 
 ### Generating an invoice
 

@@ -39,7 +39,7 @@ edit: ## Edit an invoice (date, term, language, tasks) and regenerate its PDF (i
 regenerate: ## Regenerate an invoice's PDF from stored data, e.g. make regenerate NUMBER=2026-001
 	@$(PHP_EXEC) bin/console invoice:edit $(NUMBER) --regenerate
 
-delete: ## Delete an invoice (ledger entry and PDF), e.g. make delete NUMBER=2026-001
+delete: ## Delete an invoice (ledger entry and PDF) (interactive; or NUMBER=2026-001)
 	@$(PHP_EXEC) bin/console invoice:delete $(NUMBER)
 
 edit-client: ## Edit an existing client (interactive; or ID=acme-sa)

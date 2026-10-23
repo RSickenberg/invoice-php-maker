@@ -133,7 +133,7 @@ final class EditInvoiceCommand extends Command
                         $tasks[$index] = $this->prompter->askTask($io, $config, $client, $tasks[$index]);
                         break;
                     case self::ACTION_ADD_TASK:
-                        $tasks[] = $this->prompter->askTask($io, $config, $client, defaultPeriod: ($tasks[array_key_last($tasks)] ?? null)?->period);
+                        $tasks[] = $this->prompter->askTask($io, $config, $client, defaultPeriod: $tasks === [] ? null : $tasks[array_key_last($tasks)]->period);
                         break;
                     case self::ACTION_REMOVE_TASK:
                         if (\count($tasks) === 1) {
